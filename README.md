@@ -1,5 +1,18 @@
-# AuditLens
-### Independent Agent Verification of Smart Contract Security Audits
+<p align="center">
+  <img src="assets/logo.jpg" alt="AuditLens Logo" width="120" style="border-radius:16px">
+</p>
+
+<h1 align="center">AuditLens</h1>
+
+<p align="center">
+  <strong>Independent Agent Verification of Smart Contract Security Audits</strong>
+</p>
+
+<p align="center">
+  <a href="https://auditlens.sithunyein.com">Live Demo</a> · 
+  <a href="https://github.com/thesithunyein/auditlens">GitHub</a> · 
+  <a href="#evidence">Evidence</a>
+</p>
 
 ---
 
