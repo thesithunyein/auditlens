@@ -5,6 +5,20 @@
  * Returns: { baseline, advanced, comparison }
  */
 
+// Support multiple API keys for parallel requests
+const apiKeys = [
+  process.env.FEATHERLESS_API_KEY,
+  process.env.FEATHERLESS_API_KEY_2,
+  process.env.FEATHERLESS_API_KEY_3
+].filter(Boolean);
+
+let keyIndex = 0;
+function getNextKey() {
+  const key = apiKeys[keyIndex % apiKeys.length];
+  keyIndex++;
+  return key;
+}
+
 export default async function handler(req, res) {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -17,24 +31,9 @@ export default async function handler(req, res) {
   if (!contract || !auditReport) {
     return res.status(400).json({ error: 'contract and auditReport are required' });
   }
-
-  // Support multiple API keys for parallel requests
-  const apiKeys = [
-    process.env.FEATHERLESS_API_KEY,
-    process.env.FEATHERLESS_API_KEY_2,
-    process.env.FEATHERLESS_API_KEY_3
-  ].filter(Boolean);
   
   if (apiKeys.length === 0) {
     return res.status(500).json({ error: 'FEATHERLESS_API_KEY not configured' });
-  }
-  
-  // Round-robin key selection for load balancing
-  let keyIndex = 0;
-  function getNextKey() {
-    const key = apiKeys[keyIndex % apiKeys.length];
-    keyIndex++;
-    return key;
   }
 
   try {
