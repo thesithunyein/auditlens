@@ -49,18 +49,19 @@ export default async function handler(req, res) {
 
     // Compute comparison
     const baselineFindings = Array.isArray(baseline) ? baseline : [];
-    const advancedFindings = advanced?.agents?.verification?.verified_findings || [];
-    // Also collect specialist findings that verification may have missed
-    const specialistFindings = [];
-    const staticAgent = advanced?.agents?.static_analysis;
-    const economicAgent = advanced?.agents?.economic_modeling;
-    const historicalAgent = advanced?.agents?.historical_patterns;
-    if (staticAgent && !Array.isArray(staticAgent) && staticAgent.vulnerability) specialistFindings.push({ vulnerability: staticAgent.vulnerability, severity: staticAgent.severity || 'medium', description: staticAgent.description || '', confidence: staticAgent.confidence || 50, evidence: ['static_analysis'] });
-    if (Array.isArray(economicAgent)) economicAgent.forEach(f => { if (f.vulnerability) specialistFindings.push({ vulnerability: f.vulnerability, severity: f.severity || 'medium', description: f.scenario || f.description || '', confidence: f.confidence || 30, evidence: ['economic_modeling'], impact: f.impact || '' }); });
-    if (Array.isArray(historicalAgent)) historicalAgent.forEach(f => { if (f.vulnerability) specialistFindings.push({ vulnerability: f.vulnerability, severity: f.risk_level || 'medium', description: f.similarity || f.description || '', confidence: f.confidence || 50, evidence: ['historical_patterns'] }); });
-    // Merge: verified first, then specialist findings not already in verified
-    const verifiedNames = new Set(advancedFindings.map(f => f.vulnerability?.toLowerCase()));
-    specialistFindings.forEach(f => { if (!verifiedNames.has(f.vulnerability?.toLowerCase())) advancedFindings.push(f); });
+    let advancedFindings = [];
+    try { advancedFindings = advanced?.agents?.verification?.verified_findings || []; } catch(e) {}
+    if (!Array.isArray(advancedFindings)) advancedFindings = [];
+    // Merge specialist findings not in verified
+    try {
+      const verifiedNames = new Set(advancedFindings.map(f => (f.vulnerability || '').toLowerCase()));
+      const staticAgent = advanced?.agents?.static_analysis;
+      const economicAgent = advanced?.agents?.economic_modeling;
+      const historicalAgent = advanced?.agents?.historical_patterns;
+      if (staticAgent && !Array.isArray(staticAgent) && staticAgent.vulnerability && !verifiedNames.has(staticAgent.vulnerability.toLowerCase())) advancedFindings.push({ vulnerability: staticAgent.vulnerability, severity: staticAgent.severity || 'medium', description: staticAgent.description || '', confidence: staticAgent.confidence || 50, evidence: ['static_analysis'] });
+      if (Array.isArray(economicAgent)) economicAgent.forEach(f => { if (f && f.vulnerability && !verifiedNames.has(f.vulnerability.toLowerCase())) advancedFindings.push({ vulnerability: f.vulnerability, severity: f.severity || 'medium', description: f.scenario || f.description || '', confidence: f.confidence || 30, evidence: ['economic_modeling'] }); });
+      if (Array.isArray(historicalAgent)) historicalAgent.forEach(f => { if (f && f.vulnerability && !verifiedNames.has(f.vulnerability.toLowerCase())) advancedFindings.push({ vulnerability: f.vulnerability, severity: f.risk_level || 'medium', description: f.similarity || f.description || '', confidence: f.confidence || 50, evidence: ['historical_patterns'] }); });
+    } catch(e) { /* specialist merge failed, use verified findings only */ }
 
     const comparison = {
       baseline_count: baselineFindings.length,
