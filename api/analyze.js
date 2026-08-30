@@ -215,4 +215,4 @@ Output JSON: {
   "overall_risk_score": 0-100
 }
 
-IMPORTANT: Include ALL vulnerabilities. Do not reduce the count.";
+IMPORTANT: Include ALL vulnerabilities. Do not reduce the count.`;
