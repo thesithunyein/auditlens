@@ -42,8 +42,8 @@ export default async function handler(req, res) {
 
     // Run baseline and advanced in parallel
     const [baseline, advanced] = await Promise.all([
-      runBaseline(apiKey, model, contract, auditReport),
-      runAdvanced(apiKey, model, contract, auditReport)
+      runBaseline(apiKeys[0], model, contract, auditReport),
+      runAdvanced(apiKeys[0], model, contract, auditReport)
     ]);
 
     const totalTime = Date.now() - startTime;
@@ -113,11 +113,11 @@ async function runBaseline(apiKey, model, contract, auditReport) {
 async function runAdvanced(apiKey, model, contract, auditReport) {
   const context = `## Contract Code\n\`\`\`solidity\n${contract}\n\`\`\`\n\n## Audit Report\n${auditReport}`;
 
-  // Phase 1: Run 3 specialist agents in parallel
+  // Phase 1: Run 3 specialist agents in parallel (each uses different key via round-robin)
   const [staticResult, economicResult, historicalResult] = await Promise.all([
-    runAgent(apiKey, model, STATIC_PROMPT, context),
-    runAgent(apiKey, model, ECONOMIC_PROMPT, context),
-    runAgent(apiKey, model, HISTORICAL_PROMPT, context)
+    runAgent(null, model, STATIC_PROMPT, context),
+    runAgent(null, model, ECONOMIC_PROMPT, context),
+    runAgent(null, model, HISTORICAL_PROMPT, context)
   ]);
 
   // Phase 2: Verification agent
@@ -127,7 +127,7 @@ async function runAdvanced(apiKey, model, contract, auditReport) {
     historical_patterns: historicalResult
   }, null, 2);
 
-  const verified = await runAgent(apiKey, model, VERIFICATION_PROMPT, verificationInput);
+  const verified = await runAgent(null, model, VERIFICATION_PROMPT, verificationInput);
 
   return {
     agents: { static_analysis: staticResult, economic_modeling: economicResult, historical_patterns: historicalResult, verification: verified }
