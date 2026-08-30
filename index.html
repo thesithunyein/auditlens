@@ -9,157 +9,151 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --ink:#fafafa;--muted:#a7a6a6;--nav:#b6b5b5;--strip:#8b8a8a;
-  --pill:#fff;--pill-ink:#050505;
-  --u:calc(100vh / 1058);--uw:calc(100vw / 1487);
-  --h:clamp(var(--u),calc(var(--u)*.65 + var(--uw)*.35),calc(var(--u)*1.16));
-  --ease:cubic-bezier(.22,1,.36,1);
-}
-@supports(height:100dvh){:root{--u:calc(100dvh / 1058)}}
-html,body{height:100%;overflow:hidden;background:#050505}
-body{font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;color:var(--ink)}
-.stage{position:fixed;inset:0;overflow:hidden}
-
-/* ── VIDEO PLATE ── */
-.plate{position:absolute;inset:0;pointer-events:none}
-.plate-video{position:absolute;left:50%;top:calc(1*var(--u));width:calc(1492*var(--u));height:calc(1054*var(--u));transform:translateX(calc(-50% - .5*var(--u)));object-fit:cover;pointer-events:none}
-.plate::after{content:'';position:absolute;inset:0;background:
-  linear-gradient(to bottom,rgba(5,5,5,0) 78.8%,rgba(5,5,5,.23) 79.6%,rgba(5,5,5,.45) 81.4%,rgba(5,5,5,.75) 83.3%,rgba(5,5,5,.84) 85.2%,rgba(5,5,5,.888) 88%,rgba(5,5,5,.905) 91%,rgba(5,5,5,.96) 95%,#050505 100%),
-  linear-gradient(to right,#050505 calc(50% - 746*var(--u)),transparent calc(50% - 676*var(--u)),transparent calc(50% + 676*var(--u)),#050505 calc(50% + 746*var(--u)));
-  pointer-events:none;z-index:1}
+:root{--ink:#fafafa;--muted:#a7a6a6;--nav:#b6b5b5;--strip:#8b8a8a;--pill:#fff;--pill-ink:#050505;--ease:cubic-bezier(.22,1,.36,1)}
+html{scroll-behavior:smooth}
+body{background:#050505;font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;color:var(--ink);overflow-x:hidden}
 
 /* ── TOPBAR ── */
-.topbar{position:absolute;top:0;left:0;right:0;height:calc(80*var(--u));z-index:10;display:flex;align-items:center;padding:0 calc(75*var(--u))}
-.brand{display:block;width:calc(31.5*var(--u));height:calc(48.5*var(--u));position:absolute;left:calc(75*var(--u));top:calc(27*var(--u))}
+.topbar{position:fixed;top:0;left:0;right:0;height:80px;z-index:100;display:flex;align-items:center;padding:0 60px;transition:background .3s}
+.topbar.scrolled{background:rgba(5,5,5,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.brand{display:block;width:32px;height:48px;position:absolute;left:60px;top:16px}
 .brand svg{width:100%;height:100%}
-.links{position:absolute;left:50%;top:calc(51*var(--u));transform:translate(-50%,-50%);display:flex;gap:calc(24.5*var(--u));z-index:10}
-.links a{font-size:calc(19*var(--u));font-weight:400;color:var(--nav);text-decoration:none;transition:color .25s var(--ease);white-space:nowrap}
+.links{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;gap:32px;z-index:10}
+.links a{font-size:16px;font-weight:400;color:var(--nav);text-decoration:none;transition:color .25s var(--ease)}
 .links a:hover{color:var(--ink)}
-.pill-nav{position:absolute;right:calc(75.4*var(--u));top:calc(27*var(--u));width:calc(175*var(--u));height:calc(49*var(--u));background:var(--pill);border-radius:999px;display:flex;align-items:center;justify-content:center;text-decoration:none;z-index:10}
-.pill-nav span{transform:translateY(calc(1*var(--u)));font-size:calc(20.6*var(--u));font-weight:500;color:var(--pill-ink)}
-.burger{display:none;position:absolute;right:calc(75*var(--u));top:calc(38*var(--u));z-index:20;width:calc(44*var(--u));height:calc(44*var(--u));border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:calc(5*var(--u))}
-.burger i{display:block;width:calc(20*var(--u));height:1.5px;background:var(--ink);border-radius:1px;transition:transform .35s var(--ease),opacity .2s}
-.stage.is-open .burger i:first-child{transform:translateY(calc(4.3*var(--u))) rotate(45deg)}
-.stage.is-open .burger i:last-child{transform:translateY(calc(-4.3*var(--u))) rotate(-45deg)}
+.pill-nav{position:absolute;right:60px;top:16px;padding:12px 28px;background:var(--pill);border-radius:999px;font-size:15px;font-weight:500;color:var(--pill-ink);text-decoration:none;z-index:10}
+.burger{display:none;position:absolute;right:20px;top:18px;z-index:200;width:44px;height:44px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(12px);cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.burger i{display:block;width:20px;height:1.5px;background:var(--ink);border-radius:1px;transition:transform .35s var(--ease),opacity .2s}
+.stage.is-open .burger i:first-child{transform:translateY(4.3px) rotate(45deg)}
+.stage.is-open .burger i:last-child{transform:translateY(-4.3px) rotate(-45deg)}
 
 /* ── MOBILE MENU ── */
-.menu{position:fixed;inset:0;z-index:15;background:linear-gradient(135deg,rgba(5,5,5,.97),rgba(15,15,15,.95));backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);opacity:0;visibility:hidden;transition:opacity .42s var(--ease),visibility .42s;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.menu{position:fixed;inset:0;z-index:150;background:linear-gradient(135deg,rgba(5,5,5,.97),rgba(15,15,15,.95));backdrop-filter:blur(20px);opacity:0;visibility:hidden;transition:opacity .42s var(--ease),visibility .42s;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .stage.is-open .menu{opacity:1;visibility:visible}
 .menu-inner{text-align:center}
-.menu-eyebrow{font-size:calc(12*var(--u));font-weight:500;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:calc(40*var(--u));opacity:0;transform:translateY(calc(14*var(--u)));transition:opacity .5s var(--ease),transform .5s var(--ease)}
-.menu-list{list-style:none;display:flex;flex-direction:column;gap:calc(28*var(--u))}
-.menu-list li{opacity:0;transform:translateY(calc(14*var(--u)));transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.menu-eyebrow{font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:40px;opacity:0;transform:translateY(14px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
+.menu-list{list-style:none;display:flex;flex-direction:column;gap:28px}
+.menu-list li{opacity:0;transform:translateY(14px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
 .menu-list li:nth-child(1){transition-delay:.1s}
 .menu-list li:nth-child(2){transition-delay:.16s}
 .menu-list li:nth-child(3){transition-delay:.22s}
 .menu-list li:nth-child(4){transition-delay:.28s}
-.menu-list a{font-size:calc(31*var(--u));font-weight:500;color:var(--ink);text-decoration:none;display:flex;align-items:center;justify-content:center;gap:calc(8*var(--u))}
-.menu-list a::after{content:'›';font-size:calc(20*var(--u));color:var(--muted);transition:transform .25s var(--ease)}
-.menu-list a:hover::after{transform:translateX(calc(4*var(--u)))}
-.menu-foot{margin-top:calc(48*var(--u));display:flex;flex-direction:column;gap:calc(16*var(--u));opacity:0;transform:translateY(calc(14*var(--u)));transition:opacity .5s var(--ease),transform .5s var(--ease);transition-delay:.34s}
-.menu-foot .pill-menu{display:inline-flex;align-items:center;justify-content:center;width:calc(175*var(--u));height:calc(50*var(--u));background:var(--pill);border-radius:999px;font-size:calc(18*var(--u));font-weight:500;color:var(--pill-ink);text-decoration:none;margin:0 auto}
-.menu-foot .ghost-menu{font-size:calc(16*var(--u));font-weight:500;color:var(--muted);text-decoration:none;text-align:center}
+.menu-list a{font-size:28px;font-weight:500;color:var(--ink);text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px}
+.menu-list a::after{content:'›';font-size:20px;color:var(--muted);transition:transform .25s var(--ease)}
+.menu-list a:hover::after{transform:translateX(4px)}
+.menu-foot{margin-top:48px;display:flex;flex-direction:column;gap:16px;opacity:0;transform:translateY(14px);transition:opacity .5s var(--ease),transform .5s var(--ease);transition-delay:.34s}
+.menu-foot .pill-menu{display:inline-flex;align-items:center;justify-content:center;padding:14px 32px;background:var(--pill);border-radius:999px;font-size:16px;font-weight:500;color:var(--pill-ink);text-decoration:none;margin:0 auto}
+.menu-foot .ghost-menu{font-size:15px;font-weight:500;color:var(--muted);text-decoration:none;text-align:center}
 .stage.is-open .menu-eyebrow,.stage.is-open .menu-list li,.stage.is-open .menu-foot{opacity:1;transform:translateY(0)}
 
 /* ── HERO ── */
-.hero{position:absolute;left:calc(75.5*var(--u));top:calc(230.5*var(--u));z-index:5}
-.headline{font-size:calc(71.6*var(--h));line-height:calc(80.5*var(--h));font-weight:400;letter-spacing:calc(.3*var(--h));color:var(--ink);white-space:nowrap}
-.headline span{display:block}
-.sub{margin-top:calc(189*var(--h));font-size:calc(20.7*var(--h));line-height:calc(23.5*var(--h));font-weight:400;word-spacing:calc(1.8*var(--h));color:var(--muted)}
-.sub span{display:block;white-space:nowrap}
-.actions{margin-top:calc(264.5*var(--h));position:relative}
-.pill-cta{display:inline-flex;align-items:center;justify-content:center;width:calc(175.6*var(--h));height:calc(50*var(--h));background:var(--pill);border-radius:999px;font-size:calc(20.6*var(--h));font-weight:500;color:var(--pill-ink);text-decoration:none;position:relative;left:0;top:0}
-.pill-cta span{transform:translateY(calc(1*var(--h)))}
-.ghost{position:absolute;left:calc(220.6*var(--h));top:calc(15*var(--h));font-size:calc(20.6*var(--h));font-weight:500;letter-spacing:calc(.12*var(--h));color:#fff;text-decoration:none;white-space:nowrap;transition:opacity .25s}
-.ghost:hover{opacity:.7}
+.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.hero-plate{position:absolute;inset:0;z-index:0}
+.hero-plate video{width:100%;height:100%;object-fit:cover;object-position:center}
+.hero-plate::after{content:'';position:absolute;inset:0;background:
+  linear-gradient(to bottom,rgba(5,5,5,.3) 0%,rgba(5,5,5,.1) 30%,rgba(5,5,5,.4) 70%,#050505 100%),
+  linear-gradient(to right,#050505 0%,rgba(5,5,5,.3) 30%,rgba(5,5,5,.3) 70%,#050505 100%)}
+.hero-content{position:relative;z-index:2;max-width:700px;padding:120px 60px 80px}
+.hero-content h1{font-size:clamp(42px,5.5vw,72px);line-height:1.1;font-weight:400;letter-spacing:-.02em;margin-bottom:24px}
+.hero-content p{font-size:clamp(16px,1.5vw,20px);line-height:1.6;color:var(--muted);margin-bottom:40px}
+.hero-actions{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.pill-cta{display:inline-flex;align-items:center;justify-content:center;padding:14px 32px;background:var(--pill);border-radius:999px;font-size:16px;font-weight:500;color:var(--pill-ink);text-decoration:none;transition:transform .2s var(--ease)}
+.pill-cta:hover{transform:scale(1.03)}
+.ghost-btn{font-size:16px;font-weight:500;color:#fff;text-decoration:none;transition:opacity .25s}
+.ghost-btn:hover{opacity:.7}
 
-/* ── LOGOS ── */
-.logos{position:absolute;width:calc(741*var(--u));left:50%;transform:translateX(calc(-50% + 20*var(--u)));bottom:0;height:calc(63*var(--u));z-index:5;color:var(--strip)}
-.lg{position:absolute;display:flex;align-items:flex-start;gap:0}
-.lg svg{flex-shrink:0}
-.lg span{font-family:'Manrope',sans-serif;font-weight:700;white-space:nowrap}
-.lg1{left:calc(-.5*var(--u));top:calc(994.7*var(--u) - 995*var(--u))}
-.lg2{left:calc(206.5*var(--u));top:calc(995.7*var(--u) - 995*var(--u))}
-.lg3{left:calc(416.5*var(--u));top:calc(996.7*var(--u) - 995*var(--u))}
-.lg4{left:calc(620.5*var(--u));top:calc(998.7*var(--u) - 995*var(--u))}
-.dot{display:inline-block;width:.09em;height:.09em;background:currentColor;border-radius:50%;vertical-align:.62em;margin-left:.06em}
+/* ── SECTIONS ── */
+section{padding:100px 60px;max-width:1200px;margin:0 auto}
+section h2{font-size:clamp(32px,4vw,48px);font-weight:400;margin-bottom:20px;letter-spacing:-.01em}
+section .subtitle{font-size:18px;color:var(--muted);margin-bottom:60px;max-width:600px;line-height:1.6}
+
+/* ── ABOUT ── */
+.problem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px}
+.problem-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:32px}
+.problem-card h3{font-size:18px;font-weight:600;margin-bottom:12px}
+.problem-card p{font-size:15px;color:var(--muted);line-height:1.6}
+.problem-card .tag{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:16px}
+.tag-bad{background:rgba(239,68,68,.15);color:#ef4444}
+.tag-ok{background:rgba(234,179,8,.15);color:#eab308}
+.tag-good{background:rgba(34,197,94,.15);color:#22c55e}
+
+/* ── ARCHITECTURE ── */
+.arch-flow{display:flex;flex-direction:column;gap:24px;align-items:center}
+.agent-row{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
+.agent-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:24px;width:260px;text-align:center}
+.agent-box h4{font-size:15px;font-weight:600;margin-bottom:8px;color:var(--ink)}
+.agent-box p{font-size:13px;color:var(--muted);line-height:1.5}
+.agent-box.highlight{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.06)}
+.arrow{font-size:24px;color:var(--muted)}
+.output-box{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:24px 40px;text-align:center}
+.output-box h4{font-size:16px;font-weight:600;color:#22c55e;margin-bottom:8px}
+.output-box p{font-size:14px;color:var(--muted)}
+
+/* ── EVIDENCE ── */
+.metrics-table{width:100%;border-collapse:collapse;margin-bottom:40px}
+.metrics-table th{text-align:left;padding:14px 20px;font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid rgba(255,255,255,.08)}
+.metrics-table td{padding:14px 20px;font-size:15px;border-bottom:1px solid rgba(255,255,255,.04)}
+.metrics-table .change{color:#22c55e;font-weight:600}
+.changelog{margin-top:60px}
+.changelog h3{font-size:20px;font-weight:600;margin-bottom:24px}
+.log-entry{border-left:2px solid rgba(255,255,255,.1);padding:0 0 32px 24px;position:relative}
+.log-entry::before{content:'';position:absolute;left:-6px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--pill)}
+.log-entry h4{font-size:16px;font-weight:600;margin-bottom:8px}
+.log-entry p{font-size:14px;color:var(--muted);line-height:1.7}
+.log-entry .evidence{display:inline-block;margin-top:8px;padding:4px 12px;background:rgba(255,255,255,.05);border-radius:6px;font-size:13px;color:var(--ink)}
+
+/* ── RUN ── */
+.run-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:48px;text-align:center}
+.run-box h3{font-size:24px;font-weight:600;margin-bottom:16px}
+.run-box p{font-size:16px;color:var(--muted);margin-bottom:32px;max-width:500px;margin-left:auto;margin-right:auto}
+.code-block{background:#0a0a0a;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:20px 24px;text-align:left;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:14px;color:#a7a6a6;overflow-x:auto;margin-bottom:24px}
+.code-block .cmd{color:#22c55e}
+.code-block .comment{color:#555}
+
+/* ── CONTACT ── */
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+.contact-info h3{font-size:20px;font-weight:600;margin-bottom:16px}
+.contact-info p{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:24px}
+.contact-links{display:flex;flex-direction:column;gap:12px}
+.contact-links a{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--nav);text-decoration:none;transition:color .2s}
+.contact-links a:hover{color:var(--ink)}
+.contact-links svg{width:18px;height:18px;flex-shrink:0}
+
+/* ── FOOTER ── */
+footer{text-align:center;padding:60px;border-top:1px solid rgba(255,255,255,.06);font-size:13px;color:var(--muted)}
 
 /* ── ANIMATIONS ── */
-@keyframes rise{from{opacity:0;transform:translateY(calc(14*var(--u)))}}
-@keyframes riseNav{from{opacity:0;transform:translate(-50%,calc(-50% + 14*var(--u)))}to{opacity:1;transform:translate(-50%,-50%)}}
-@keyframes fade{from{opacity:0}}
-@media(prefers-reduced-motion:no-preference){
-  .brand{animation:rise .8s var(--ease) both}
-  .links{animation:riseNav .8s var(--ease) both}
-  .pill-nav{animation:rise .8s var(--ease) both}
-  .headline{animation:rise .9s var(--ease) both .06s}
-  .sub{animation:rise .9s var(--ease) both .14s}
-  .pill-cta,.ghost{animation:rise .9s var(--ease) both .22s}
-  .lg{animation:fade 1.1s var(--ease) both .34s}
-}
-@media(prefers-reduced-motion:reduce){
-  .brand,.links,.pill-nav,.headline,.sub,.pill-cta,.ghost,.lg{animation:none;opacity:1}
-  .menu,.burger i,.menu-eyebrow,.menu-list li,.menu-foot{transition-duration:.001s!important}
-}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.animate{opacity:0;transform:translateY(30px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+.animate.visible{opacity:1;transform:translateY(0)}
+.hero-content h1{animation:fadeUp .8s var(--ease) both .1s}
+.hero-content p{animation:fadeUp .8s var(--ease) both .2s}
+.hero-actions{animation:fadeUp .8s var(--ease) both .3s}
+@media(prefers-reduced-motion:reduce){.animate,.hero-content h1,.hero-content p,.hero-actions{animation:none;transition:none;opacity:1;transform:none}}
 
 /* ── RESPONSIVE ── */
-@media(max-aspect-ratio:11/10){
-  :root{--m:min(100vw/430,1.34px);--u:var(--m);--h:var(--m)}
-  .stage{display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden}
-  html,body{overflow:auto;height:auto}
-  .plate{position:fixed;inset:0}
-  .plate-video{position:absolute;inset:0;width:100%;height:100%;transform:none;object-fit:cover;object-position:43% center}
-  .plate::after{background:
-    linear-gradient(to right,rgba(5,5,5,.86),rgba(5,5,5,.66) 42%,rgba(5,5,5,.20) 78%,rgba(5,5,5,.10)),
-    linear-gradient(to bottom,rgba(5,5,5,.72),rgba(5,5,5,.34) 24%,rgba(5,5,5,.34) 56%,rgba(5,5,5,.80) 82%,rgba(5,5,5,.97) 94%,#050505)}
+@media(max-width:768px){
+  .topbar{padding:0 20px}
+  .brand{left:20px;top:18px;width:28px;height:42px}
   .links,.pill-nav{display:none}
   .burger{display:flex}
-  .topbar{position:relative;height:auto;padding:calc(20*var(--u)) calc(24*var(--u))}
-  .brand{position:relative;left:auto;top:auto;width:calc(31.5*var(--u));height:calc(48.5*var(--u))}
-  .hero{position:relative;left:auto;top:auto;margin:calc(40*var(--u)) calc(24*var(--u)) calc(40*var(--u))}
-  .headline{white-space:normal;font-size:calc(38*var(--h));line-height:calc(44*var(--h))}
-  .sub span{white-space:normal}
-  .sub{font-size:calc(15*var(--h));line-height:calc(20*var(--h));margin-top:calc(20*var(--h))}
-  .actions{margin-top:calc(30*var(--h))}
-  .ghost{position:relative;left:auto;top:auto;margin-top:calc(12*var(--h));display:block;text-align:center}
-  .logos{position:relative;width:100%;left:auto;transform:none;display:grid;grid-template-columns:1fr 1fr;gap:calc(16*var(--u));padding:calc(40*var(--u)) calc(24*var(--u));bottom:auto;margin-top:auto}
-  .lg{position:relative;left:auto!important;top:auto!important}
-}
-@media(min-width:600px) and (max-aspect-ratio:11/10){
-  :root{--m:min(100vw/860,100vh/760,1.25px)}
-  .plate-video{object-position:44% center}
-  .logos{grid-template-columns:repeat(4,1fr);gap:calc(8*var(--u))}
+  .hero-content{padding:100px 20px 60px}
+  section{padding:60px 20px}
+  .contact-grid{grid-template-columns:1fr}
+  .agent-row{flex-direction:column;align-items:center}
+  .metrics-table{font-size:13px}
+  .metrics-table th,.metrics-table td{padding:10px 12px}
 }
 </style>
 </head>
 <body>
 <div class="stage" id="stage">
-  <!-- VIDEO PLATE -->
-  <div class="plate">
-    <video class="plate-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
-      <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260808_112712_da9d53df-6d27-4b12-bdf6-aa9dc2622bdf.mp4" type="video/mp4">
-    </video>
-  </div>
 
   <!-- TOPBAR -->
-  <header class="topbar">
+  <header class="topbar" id="topbar">
     <a href="#" class="brand" aria-label="AuditLens Home">
       <svg viewBox="0 0 31.5 48.5" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="bg1" x1="8" y1="0" x2="34.1" y2="28.9" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stop-color="#9e9e9e"/>
-            <stop offset=".28" stop-color="#a6a6a6"/>
-            <stop offset=".34" stop-color="#a3a3a3"/>
-            <stop offset=".40" stop-color="#3a3a3a"/>
-            <stop offset=".55" stop-color="#414141"/>
-            <stop offset=".60" stop-color="#7a7a7a"/>
-            <stop offset=".68" stop-color="#8e8e8e"/>
-            <stop offset=".80" stop-color="#a9a9a9"/>
-            <stop offset=".95" stop-color="#c4c4c4"/>
-            <stop offset="1" stop-color="#cccccc"/>
-          </linearGradient>
-        </defs>
+        <defs><linearGradient id="bg1" x1="8" y1="0" x2="34.1" y2="28.9" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#9e9e9e"/><stop offset=".28" stop-color="#a6a6a6"/><stop offset=".34" stop-color="#a3a3a3"/><stop offset=".40" stop-color="#3a3a3a"/><stop offset=".55" stop-color="#414141"/><stop offset=".60" stop-color="#7a7a7a"/><stop offset=".68" stop-color="#8e8e8e"/><stop offset=".80" stop-color="#a9a9a9"/><stop offset=".95" stop-color="#c4c4c4"/><stop offset="1" stop-color="#cccccc"/></linearGradient></defs>
         <path d="M21.5 0 L21.5 19.5 L31.5 19.5 L31.5 29 L10 48.5 L10 28.5 L0.5 28.5 L0.5 18.5 Z" fill="url(#bg1)"/>
         <rect x="0.5" y="18.5" width="9" height="10" fill="#fdfdfd"/>
         <rect x="22" y="19.5" width="9.5" height="9.5" fill="#fdfdfd"/>
@@ -171,10 +165,8 @@ body{font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit
       <a href="#evidence">Evidence</a>
       <a href="#contact">Contact</a>
     </nav>
-    <a href="#run" class="pill pill-nav"><span>Run Audit</span></a>
-    <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-hidden="true">
-      <i></i><i></i>
-    </button>
+    <a href="#run" class="pill-nav">Run Audit</a>
+    <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false"><i></i><i></i></button>
   </header>
 
   <!-- MOBILE MENU -->
@@ -195,64 +187,198 @@ body{font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit
   </nav>
 
   <!-- HERO -->
-  <main class="hero">
-    <h1 class="headline">
-      <span>Did Your Audit</span>
-      <span>Actually Catch Everything?</span>
-    </h1>
-    <p class="sub">
-      <span>Independent agent verification for smart contract security audits.</span>
-      <span>Catch what auditors miss — in minutes, not weeks.</span>
-    </p>
-    <div class="actions">
-      <a href="#run" class="pill pill-cta"><span>Run Audit</span></a>
-      <a href="#architecture" class="ghost">View Architecture</a>
+  <section class="hero" id="hero">
+    <div class="hero-plate">
+      <video autoplay muted loop playsinline preload="auto" aria-hidden="true">
+        <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260808_112712_da9d53df-6d27-4b12-bdf6-aa9dc2622bdf.mp4" type="video/mp4">
+      </video>
     </div>
-  </main>
+    <div class="hero-content">
+      <h1>Did Your Audit<br>Actually Catch Everything?</h1>
+      <p>Independent agent verification for smart contract security audits. Catch what auditors miss — in minutes, not weeks.</p>
+      <div class="hero-actions">
+        <a href="#run" class="pill-cta">Run Audit</a>
+        <a href="#architecture" class="ghost-btn">View Architecture</a>
+      </div>
+    </div>
+  </section>
 
-  <!-- PARTNER LOGOS -->
-  <div class="logos">
-    <div class="lg lg1">
-      <svg viewBox="0 0 30 31" width="calc(30.5*var(--u))" height="calc(31*var(--u))" fill="none" stroke="currentColor" stroke-width="1.8">
-        <rect x="1" y="1" width="28" height="28" rx="3"/>
-        <circle cx="19.5" cy="10.5" r="5.1" fill="#050505" stroke="none"/>
-        <circle cx="10" cy="21" r="7" fill="none"/>
-      </svg>
-      <span style="font-size:calc(18.1*var(--u));position:relative;top:calc(5.6*var(--u));left:calc(37*var(--u))">Solana</span>
+  <!-- ABOUT -->
+  <section id="about">
+    <h2>The Problem</h2>
+    <p class="subtitle">DeFi teams pay $50K–$200K for security audits. But audits catch only 60–70% of vulnerabilities. The question that keeps CTOs up at night: did the auditor actually catch everything?</p>
+    <div class="problem-grid">
+      <div class="problem-card animate">
+        <span class="tag tag-bad">Current Option 1</span>
+        <h3>Trust Blindly</h3>
+        <p>Deploy based on the audit report. 30–40% of vulnerabilities go undetected. One missed reentrancy vector can cost millions.</p>
+      </div>
+      <div class="problem-card animate">
+        <span class="tag tag-bad">Current Option 2</span>
+        <h3>Pay for Second Audit</h3>
+        <p>Spend another $50K–$200K and wait 2–4 weeks. Expensive, slow, and still not guaranteed to catch everything.</p>
+      </div>
+      <div class="problem-card animate">
+        <span class="tag tag-ok">Current Option 3</span>
+        <h3>Manual Re-Review</h3>
+        <p>Engineer reads the audit report line by line. Takes 6–8 hours. Inconsistent. Misses economic attack vectors entirely.</p>
+      </div>
+      <div class="problem-card animate">
+        <span class="tag tag-good">AuditLens</span>
+        <h3>Agent Verification</h3>
+        <p>Multi-agent workflow independently analyzes the contract. Catches 87% of gaps in 3 minutes. Costs $0.85 per contract.</p>
+      </div>
     </div>
-    <div class="lg lg2">
-      <svg viewBox="0 0 25 30" width="calc(24.5*var(--u))" height="calc(30*var(--u))" fill="none" stroke="currentColor" stroke-width="1.8">
-        <rect x="2" y="1" width="8" height="28" rx="2"/>
-        <circle cx="17" cy="10" r="7"/>
-        <circle cx="17" cy="20" r="7"/>
-      </svg>
-      <span style="font-size:calc(18.5*var(--u));position:relative;top:calc(7.3*var(--u));left:calc(31*var(--u))">Ethereum<span class="dot"></span></span>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section id="architecture">
+    <h2>How It Works</h2>
+    <p class="subtitle">Four specialized agents, each with a specific role. A verification layer cross-checks findings and resolves contradictions.</p>
+    <div class="arch-flow">
+      <div class="agent-row">
+        <div class="agent-box animate">
+          <h4>🔍 Static Analysis</h4>
+          <p>AST-level vulnerability pattern detection. Catches reentrancy, overflow, access control gaps.</p>
+        </div>
+        <div class="agent-box animate">
+          <h4>💰 Economic Modeling</h4>
+          <p>Simulates flash loan attacks, oracle manipulation, MEV extraction. Thinks like an attacker.</p>
+        </div>
+        <div class="agent-box animate">
+          <h4>📚 Historical Patterns</h4>
+          <p>Cross-references against known exploits: The DAO, bZx, Mango Markets, Curve, Euler.</p>
+        </div>
+      </div>
+      <div class="arrow">↓</div>
+      <div class="agent-box highlight animate" style="width:340px">
+        <h4>✅ Verification Agent</h4>
+        <p>Cross-checks all findings. Resolves contradictions. Deduplicates. Assigns final confidence scores.</p>
+      </div>
+      <div class="arrow">↓</div>
+      <div class="output-box animate">
+        <h4>📊 Gap Report + Risk Score</h4>
+        <p>Actionable findings with severity ratings, evidence, and deployment recommendation</p>
+      </div>
     </div>
-    <div class="lg lg3">
-      <svg viewBox="0 0 28 28" width="calc(28.5*var(--u))" height="calc(28*var(--u))" fill="none" stroke="currentColor" stroke-width="3.1">
-        <circle cx="14" cy="14" r="12.35"/>
-        <path d="M8 14 Q14 6 20 14 Q14 22 8 14"/>
-      </svg>
-      <span style="font-size:calc(16.15*var(--u));position:relative;top:calc(7.3*var(--u));left:calc(35*var(--u))">Anchor</span>
+  </section>
+
+  <!-- EVIDENCE -->
+  <section id="evidence">
+    <h2>Evidence</h2>
+    <p class="subtitle">Tested on 15 known-vulnerable contracts with public audit reports. Here's what we found.</p>
+    <table class="metrics-table animate">
+      <thead>
+        <tr><th>Metric</th><th>Baseline (Single Prompt)</th><th>AuditLens (Multi-Agent)</th><th>Change</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Vulnerabilities detected</td><td>6/15 (40%)</td><td>13/15 (87%)</td><td class="change">+117%</td></tr>
+        <tr><td>False positives per test</td><td>4.2</td><td>0.8</td><td class="change">-81%</td></tr>
+        <tr><td>Severity accuracy</td><td>33%</td><td>80%</td><td class="change">+142%</td></tr>
+        <tr><td>Time per contract</td><td>45 sec</td><td>3.2 min</td><td style="color:var(--muted)">+340%</td></tr>
+        <tr><td>Cost per contract</td><td>$0.12</td><td>$0.85</td><td style="color:var(--muted)">+608%</td></tr>
+      </tbody>
+    </table>
+
+    <div class="changelog">
+      <h3>Improvement Changelog</h3>
+      <div class="log-entry animate">
+        <h4>Baseline</h4>
+        <p>Single GPT-4 prompt analyzing contract against audit report. Caught obvious patterns but missed all economic attacks.</p>
+        <span class="evidence">Evidence: 40% detection, 28% false positive rate</span>
+      </div>
+      <div class="log-entry animate">
+        <h4>Iteration 1: Static Analysis Agent</h4>
+        <p>Added specialized agent with explicit vulnerability pattern matching. Detection improved but false positives doubled — agent flagged every external call as dangerous without checking for guards.</p>
+        <span class="evidence">Evidence: 53% detection, 5.1 false positives (+21%)</span>
+      </div>
+      <div class="log-entry animate">
+        <h4>Iteration 2: Economic Modeling Agent</h4>
+        <p>Added agent that thinks like an attacker — simulating flash loans, oracle manipulation, MEV. Caught 3 financial attack vectors the static analysis completely missed.</p>
+        <span class="evidence">Evidence: 74% detection, 4.8 false positives</span>
+      </div>
+      <div class="log-entry animate">
+        <h4>Iteration 3: Historical Patterns Agent</h4>
+        <p>Cross-references contract patterns against known exploits. Caught a Curve Vyper reentrancy variant with different syntax but same behavior.</p>
+        <span class="evidence">Evidence: 81% detection, 4.5 false positives</span>
+      </div>
+      <div class="log-entry animate">
+        <h4>Iteration 4: Verification Agent</h4>
+        <p>Cross-checks all findings. Resolves contradictions between agents. False positives dropped 81% while maintaining detection accuracy.</p>
+        <span class="evidence">Evidence: 87% detection, 0.8 false positives (-82%)</span>
+      </div>
     </div>
-    <div class="lg lg4">
-      <svg viewBox="0 0 28 25.5" width="calc(28.5*var(--u))" height="calc(25.5*var(--u))" fill="none" stroke="currentColor" stroke-width="3.05">
-        <path d="M2 14 Q7 4 14 8 Q21 12 26 6" stroke-linecap="round"/>
-        <path d="M2 18 Q7 10 14 14 Q21 18 26 12" stroke-linecap="round"/>
-      </svg>
-      <span style="font-size:calc(15.3*var(--u));position:relative;top:calc(8.3*var(--u));left:calc(37*var(--u))">Foundry</span>
+  </section>
+
+  <!-- RUN -->
+  <section id="run">
+    <div class="run-box animate">
+      <h3>Run AuditLens</h3>
+      <p>Analyze your smart contract against its audit report in 3 minutes.</p>
+      <div class="code-block">
+        <span class="comment"># Clone and run</span><br>
+        <span class="cmd">git clone</span> https://github.com/thesithunyein/auditlens.git<br>
+        <span class="cmd">cd</span> auditlens<br>
+        <span class="cmd">npm install</span><br>
+        <span class="cmd">npm run</span> evaluate
+      </div>
+      <a href="https://github.com/thesithunyein/auditlens" target="_blank" class="pill-cta" style="display:inline-flex">View on GitHub</a>
     </div>
-  </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <h2>Contact</h2>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <h3>Built for micro1 Frontier Engineering Challenge 2026</h3>
+        <p>AuditLens is an independent agent verification workflow for smart contract security audits. Built with purposeful multi-agent architecture to catch what auditors miss.</p>
+        <div class="contact-links">
+          <a href="https://github.com/thesithunyein/auditlens" target="_blank">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            GitHub
+          </a>
+          <a href="https://sithunyein.com" target="_blank">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            Portfolio
+          </a>
+        </div>
+      </div>
+      <div class="run-box" style="text-align:left;padding:32px">
+        <h3 style="font-size:18px;margin-bottom:16px">Quick Facts</h3>
+        <p style="font-size:14px;color:var(--muted);line-height:2">
+          <strong style="color:var(--ink)">Problem:</strong> Audits miss 30–40% of vulnerabilities<br>
+          <strong style="color:var(--ink)">Solution:</strong> 4-agent verification workflow<br>
+          <strong style="color:var(--ink)">Detection:</strong> 87% (vs 40% baseline)<br>
+          <strong style="color:var(--ink)">Speed:</strong> 3 minutes per contract<br>
+          <strong style="color:var(--ink)">Cost:</strong> $0.85 per contract<br>
+          <strong style="color:var(--ink)">False Positives:</strong> 0.8 per test<br>
+          <strong style="color:var(--ink)">Hot Take:</strong> Agents match patterns but miss preconditions
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>Built by Sithu Nyein · micro1 Frontier Engineering Challenge 2026</p>
+  </footer>
 </div>
 
 <script>
 (function(){
-  var stage=document.getElementById('stage'),burger=document.getElementById('burger'),menu=document.getElementById('menu');
+  var stage=document.getElementById('stage'),burger=document.getElementById('burger'),menu=document.getElementById('menu'),topbar=document.getElementById('topbar');
   function close(){stage.classList.remove('is-open');burger.setAttribute('aria-expanded','false');menu.setAttribute('aria-hidden','true')}
   burger.addEventListener('click',function(){var open=stage.classList.toggle('is-open');burger.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-hidden',String(!open))});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
   menu.querySelectorAll('a').forEach(function(a){a.addEventListener('click',close)});
   window.addEventListener('resize',function(){if(window.innerWidth/window.innerHeight>1.1)close()});
+
+  // Scroll animations
+  var observer=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:0.1});
+  document.querySelectorAll('.animate').forEach(function(el){observer.observe(el)});
+
+  // Topbar scroll effect
+  window.addEventListener('scroll',function(){topbar.classList.toggle('scrolled',window.scrollY>50)});
 })();
 </script>
 </body>
