@@ -13,14 +13,14 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { contract, auditReport, model = 'gpt-4' } = req.body || {};
+  const { contract, auditReport, model = 'Qwen/Qwen2.5-7B-Instruct' } = req.body || {};
   if (!contract || !auditReport) {
     return res.status(400).json({ error: 'contract and auditReport are required' });
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.FEATHERLESS_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'OPENAI_API_KEY not configured' });
+    return res.status(500).json({ error: 'FEATHERLESS_API_KEY not configured' });
   }
 
   try {
@@ -63,7 +63,7 @@ export default async function handler(req, res) {
 
 // ─── BASELINE: Single-prompt analysis ───
 async function runBaseline(apiKey, model, contract, auditReport) {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch('https://api.featherless.ai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -121,7 +121,7 @@ async function runAdvanced(apiKey, model, contract, auditReport) {
 }
 
 async function runAgent(apiKey, model, systemPrompt, content) {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  const response = await fetch('https://api.featherless.ai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
