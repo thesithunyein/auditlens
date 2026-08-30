@@ -9,268 +9,292 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--ink:#fafafa;--muted:#a7a6a6;--nav:#b6b5b5;--strip:#8b8a8a;--pill:#fff;--pill-ink:#050505;--ease:cubic-bezier(.22,1,.36,1)}
+:root{--ink:#fafafa;--muted:#a7a6a6;--nav:#b6b5b5;--strip:#8b8a8a;--pill:#fff;--pill-ink:#050505;--ease:cubic-bezier(.22,1,.36,1);--green:#22c55e;--red:#ef4444;--yellow:#eab308;--blue:#3b82f6}
 html{scroll-behavior:smooth}
 body{background:#050505;font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;color:var(--ink);overflow-x:hidden}
 
 /* ── TOPBAR ── */
-.topbar{position:fixed;top:0;left:0;right:0;height:80px;z-index:100;display:flex;align-items:center;padding:0 60px;transition:background .3s}
-.topbar.scrolled{background:rgba(5,5,5,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
-.brand{display:block;width:32px;height:48px;position:absolute;left:60px;top:16px}
-.brand svg{width:100%;height:100%}
-.links{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;gap:32px;z-index:10}
-.links a{font-size:16px;font-weight:400;color:var(--nav);text-decoration:none;transition:color .25s var(--ease)}
+.topbar{position:fixed;top:0;left:0;right:0;height:72px;z-index:100;display:flex;align-items:center;padding:0 48px;transition:background .3s}
+.topbar.scrolled{background:rgba(5,5,5,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.06)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink)}
+.brand svg{width:28px;height:42px}
+.brand-name{font-size:18px;font-weight:700;letter-spacing:-.02em}
+.links{display:flex;gap:32px;margin-left:auto;margin-right:32px}
+.links a{font-size:14px;font-weight:500;color:var(--nav);text-decoration:none;transition:color .2s}
 .links a:hover{color:var(--ink)}
-.pill-nav{position:absolute;right:60px;top:16px;padding:12px 28px;background:var(--pill);border-radius:999px;font-size:15px;font-weight:500;color:var(--pill-ink);text-decoration:none;z-index:10}
-.burger{display:none;position:absolute;right:20px;top:18px;z-index:200;width:44px;height:44px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(12px);cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px}
-.burger i{display:block;width:20px;height:1.5px;background:var(--ink);border-radius:1px;transition:transform .35s var(--ease),opacity .2s}
-.stage.is-open .burger i:first-child{transform:translateY(4.3px) rotate(45deg)}
-.stage.is-open .burger i:last-child{transform:translateY(-4.3px) rotate(-45deg)}
-
-/* ── MOBILE MENU ── */
-.menu{position:fixed;inset:0;z-index:150;background:linear-gradient(135deg,rgba(5,5,5,.97),rgba(15,15,15,.95));backdrop-filter:blur(20px);opacity:0;visibility:hidden;transition:opacity .42s var(--ease),visibility .42s;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pill-nav{padding:10px 24px;background:var(--pill);border-radius:999px;font-size:14px;font-weight:600;color:var(--pill-ink);text-decoration:none;transition:transform .2s}
+.pill-nav:hover{transform:scale(1.03)}
+.burger{display:none;width:40px;height:40px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(12px);cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.burger i{display:block;width:18px;height:1.5px;background:var(--ink);border-radius:1px;transition:transform .3s var(--ease)}
+.stage.is-open .burger i:first-child{transform:translateY(4px) rotate(45deg)}
+.stage.is-open .burger i:last-child{transform:translateY(-4px) rotate(-45deg)}
+.menu{position:fixed;inset:0;z-index:150;background:rgba(5,5,5,.98);backdrop-filter:blur(20px);opacity:0;visibility:hidden;transition:opacity .35s,visibility .35s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:32px}
 .stage.is-open .menu{opacity:1;visibility:visible}
-.menu-inner{text-align:center}
-.menu-eyebrow{font-size:12px;font-weight:500;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:40px;opacity:0;transform:translateY(14px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
-.menu-list{list-style:none;display:flex;flex-direction:column;gap:28px}
-.menu-list li{opacity:0;transform:translateY(14px);transition:opacity .5s var(--ease),transform .5s var(--ease)}
-.menu-list li:nth-child(1){transition-delay:.1s}
-.menu-list li:nth-child(2){transition-delay:.16s}
-.menu-list li:nth-child(3){transition-delay:.22s}
-.menu-list li:nth-child(4){transition-delay:.28s}
-.menu-list a{font-size:28px;font-weight:500;color:var(--ink);text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px}
-.menu-list a::after{content:'›';font-size:20px;color:var(--muted);transition:transform .25s var(--ease)}
-.menu-list a:hover::after{transform:translateX(4px)}
-.menu-foot{margin-top:48px;display:flex;flex-direction:column;gap:16px;opacity:0;transform:translateY(14px);transition:opacity .5s var(--ease),transform .5s var(--ease);transition-delay:.34s}
-.menu-foot .pill-menu{display:inline-flex;align-items:center;justify-content:center;padding:14px 32px;background:var(--pill);border-radius:999px;font-size:16px;font-weight:500;color:var(--pill-ink);text-decoration:none;margin:0 auto}
-.menu-foot .ghost-menu{font-size:15px;font-weight:500;color:var(--muted);text-decoration:none;text-align:center}
-.stage.is-open .menu-eyebrow,.stage.is-open .menu-list li,.stage.is-open .menu-foot{opacity:1;transform:translateY(0)}
+.menu a{font-size:24px;font-weight:500;color:var(--ink);text-decoration:none}
 
 /* ── HERO ── */
-.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
-.hero-plate{position:absolute;inset:0;z-index:0}
-.hero-plate video{width:100%;height:100%;object-fit:cover;object-position:center}
-.hero-plate::after{content:'';position:absolute;inset:0;background:
-  linear-gradient(to bottom,rgba(5,5,5,.3) 0%,rgba(5,5,5,.1) 30%,rgba(5,5,5,.4) 70%,#050505 100%),
-  linear-gradient(to right,#050505 0%,rgba(5,5,5,.3) 30%,rgba(5,5,5,.3) 70%,#050505 100%)}
-.hero-content{position:relative;z-index:2;max-width:700px;padding:120px 60px 80px}
-.hero-content h1{font-size:clamp(42px,5.5vw,72px);line-height:1.1;font-weight:400;letter-spacing:-.02em;margin-bottom:24px}
-.hero-content p{font-size:clamp(16px,1.5vw,20px);line-height:1.6;color:var(--muted);margin-bottom:40px}
-.hero-actions{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
-.pill-cta{display:inline-flex;align-items:center;justify-content:center;padding:14px 32px;background:var(--pill);border-radius:999px;font-size:16px;font-weight:500;color:var(--pill-ink);text-decoration:none;transition:transform .2s var(--ease)}
-.pill-cta:hover{transform:scale(1.03)}
-.ghost-btn{font-size:16px;font-weight:500;color:#fff;text-decoration:none;transition:opacity .25s}
-.ghost-btn:hover{opacity:.7}
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden}
+.hero-plate{position:absolute;inset:0}
+.hero-plate video{width:100%;height:100%;object-fit:cover}
+.hero-plate::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(5,5,5,.7),rgba(5,5,5,.4) 50%,rgba(5,5,5,.8))}
+.hero-content{position:relative;z-index:2;max-width:640px;padding:120px 48px 80px}
+.hero-eyebrow{font-size:13px;font-weight:600;color:var(--green);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px}
+.hero-content h1{font-size:clamp(38px,5vw,64px);line-height:1.08;font-weight:400;letter-spacing:-.03em;margin-bottom:20px}
+.hero-content h1 em{font-style:normal;color:var(--green)}
+.hero-content p{font-size:17px;line-height:1.7;color:var(--muted);margin-bottom:36px}
+.hero-actions{display:flex;gap:16px;flex-wrap:wrap}
+.btn-primary{padding:14px 32px;background:var(--pill);border-radius:999px;font-size:15px;font-weight:600;color:var(--pill-ink);text-decoration:none;transition:transform .2s;border:none;cursor:pointer}
+.btn-primary:hover{transform:scale(1.03)}
+.btn-secondary{padding:14px 32px;background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:999px;font-size:15px;font-weight:600;color:var(--ink);text-decoration:none;transition:border-color .2s}
+.btn-secondary:hover{border-color:rgba(255,255,255,.4)}
+.hero-stats{display:flex;gap:40px;margin-top:48px;padding-top:32px;border-top:1px solid rgba(255,255,255,.08)}
+.hero-stat{text-align:left}
+.hero-stat .num{font-size:28px;font-weight:700;color:var(--ink)}
+.hero-stat .label{font-size:13px;color:var(--muted);margin-top:4px}
 
 /* ── SECTIONS ── */
-section{padding:100px 60px;max-width:1200px;margin:0 auto}
-section h2{font-size:clamp(32px,4vw,48px);font-weight:400;margin-bottom:20px;letter-spacing:-.01em}
-section .subtitle{font-size:18px;color:var(--muted);margin-bottom:60px;max-width:600px;line-height:1.6}
+section{padding:100px 48px;max-width:1200px;margin:0 auto}
+.section-eyebrow{font-size:12px;font-weight:600;color:var(--green);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px}
+section h2{font-size:clamp(28px,3.5vw,42px);font-weight:400;letter-spacing:-.02em;margin-bottom:16px}
+section .subtitle{font-size:16px;color:var(--muted);line-height:1.7;max-width:560px;margin-bottom:48px}
+.divider{height:1px;background:rgba(255,255,255,.06);max-width:1200px;margin:0 auto}
 
-/* ── ABOUT ── */
-.problem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px}
-.problem-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:32px}
-.problem-card h3{font-size:18px;font-weight:600;margin-bottom:12px}
-.problem-card p{font-size:15px;color:var(--muted);line-height:1.6}
-.problem-card .tag{display:inline-block;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;margin-bottom:16px}
-.tag-bad{background:rgba(239,68,68,.15);color:#ef4444}
-.tag-ok{background:rgba(234,179,8,.15);color:#eab308}
-.tag-good{background:rgba(34,197,94,.15);color:#22c55e}
+/* ── PROBLEM ── */
+.problem-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:24px}
+.problem-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:28px;transition:border-color .2s}
+.problem-card:hover{border-color:rgba(255,255,255,.12)}
+.problem-card .tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;margin-bottom:14px}
+.tag-red{background:rgba(239,68,68,.12);color:var(--red)}
+.tag-yellow{background:rgba(234,179,8,.12);color:var(--yellow)}
+.tag-green{background:rgba(34,197,94,.12);color:var(--green)}
+.problem-card h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.problem-card p{font-size:14px;color:var(--muted);line-height:1.6}
+.problem-card .metric{margin-top:14px;font-size:13px;font-weight:600}
+.problem-card .metric.red{color:var(--red)}
+.problem-card .metric.yellow{color:var(--yellow)}
+.problem-card .metric.green{color:var(--green)}
+.solution-card{background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.15);border-radius:12px;padding:28px}
 
 /* ── ARCHITECTURE ── */
-.arch-flow{display:flex;flex-direction:column;gap:24px;align-items:center}
-.agent-row{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
-.agent-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:24px;width:260px;text-align:center}
-.agent-box h4{font-size:15px;font-weight:600;margin-bottom:8px;color:var(--ink)}
-.agent-box p{font-size:13px;color:var(--muted);line-height:1.5}
-.agent-box.highlight{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.06)}
-.arrow{font-size:24px;color:var(--muted)}
-.output-box{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:24px 40px;text-align:center}
-.output-box h4{font-size:16px;font-weight:600;color:#22c55e;margin-bottom:8px}
-.output-box p{font-size:14px;color:var(--muted)}
+.arch-visual{display:flex;flex-direction:column;gap:16px;align-items:center;padding:40px 0}
+.agent-row{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.agent-node{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:20px;width:240px;transition:border-color .2s,transform .2s}
+.agent-node:hover{border-color:rgba(255,255,255,.15);transform:translateY(-2px)}
+.agent-node .icon{font-size:20px;margin-bottom:10px}
+.agent-node h4{font-size:14px;font-weight:600;margin-bottom:6px}
+.agent-node p{font-size:12px;color:var(--muted);line-height:1.5}
+.agent-node.verify{border-color:rgba(255,255,255,.15);background:rgba(255,255,255,.05)}
+.arrow-down{font-size:20px;color:var(--muted);text-align:center}
+.output-node{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:20px 40px;text-align:center}
+.output-node h4{font-size:15px;font-weight:600;color:var(--green);margin-bottom:6px}
+.output-node p{font-size:13px;color:var(--muted)}
 
 /* ── EVIDENCE ── */
-.metrics-table{width:100%;border-collapse:collapse;margin-bottom:40px}
-.metrics-table th{text-align:left;padding:14px 20px;font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid rgba(255,255,255,.08)}
-.metrics-table td{padding:14px 20px;font-size:15px;border-bottom:1px solid rgba(255,255,255,.04)}
-.metrics-table .change{color:#22c55e;font-weight:600}
-.changelog{margin-top:60px}
-.changelog h3{font-size:20px;font-weight:600;margin-bottom:24px}
-.log-entry{border-left:2px solid rgba(255,255,255,.1);padding:0 0 32px 24px;position:relative}
-.log-entry::before{content:'';position:absolute;left:-6px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--pill)}
-.log-entry h4{font-size:16px;font-weight:600;margin-bottom:8px}
-.log-entry p{font-size:14px;color:var(--muted);line-height:1.7}
-.log-entry .evidence{display:inline-block;margin-top:8px;padding:4px 12px;background:rgba(255,255,255,.05);border-radius:6px;font-size:13px;color:var(--ink)}
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:48px}
+.metric-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:24px;text-align:center}
+.metric-card .value{font-size:32px;font-weight:700;margin-bottom:4px}
+.metric-card .value.green{color:var(--green)}
+.metric-card .label{font-size:13px;color:var(--muted)}
+.metrics-table{width:100%;border-collapse:collapse;margin-bottom:48px}
+.metrics-table th{text-align:left;padding:12px 16px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid rgba(255,255,255,.08)}
+.metrics-table td{padding:12px 16px;font-size:14px;border-bottom:1px solid rgba(255,255,255,.04)}
+.metrics-table .change{color:var(--green);font-weight:600}
+.changelog-timeline{margin-top:48px}
+.log-item{display:flex;gap:20px;padding-bottom:32px;position:relative}
+.log-line{width:2px;background:rgba(255,255,255,.08);position:relative;flex-shrink:0}
+.log-line::before{content:'';position:absolute;top:0;left:-4px;width:10px;height:10px;border-radius:50%;background:var(--green)}
+.log-content h4{font-size:15px;font-weight:600;margin-bottom:6px}
+.log-content p{font-size:14px;color:var(--muted);line-height:1.6}
+.log-content .evidence{display:inline-block;margin-top:8px;padding:4px 10px;background:rgba(255,255,255,.04);border-radius:6px;font-size:12px;font-weight:500}
 
-/* ── RUN ── */
-.run-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:48px;text-align:center}
-.run-box h3{font-size:24px;font-weight:600;margin-bottom:16px}
-.run-box p{font-size:16px;color:var(--muted);margin-bottom:32px;max-width:500px;margin-left:auto;margin-right:auto}
-.code-block{background:#0a0a0a;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:20px 24px;text-align:left;font-family:'SF Mono',Monaco,Consolas,monospace;font-size:14px;color:#a7a6a6;overflow-x:auto;margin-bottom:24px}
-.code-block .cmd{color:#22c55e}
-.code-block .comment{color:#555}
+/* ── DASHBOARD ── */
+.dashboard{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:40px;margin-top:48px}
+.dash-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+.dash-header h3{font-size:20px;font-weight:600}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.dash-panel{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:24px}
+.dash-panel h4{font-size:14px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.dash-panel h4 .dot{width:8px;height:8px;border-radius:50%}
+.upload-zone{border:2px dashed rgba(255,255,255,.1);border-radius:8px;padding:32px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+.upload-zone:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.02)}
+.upload-zone.dragging{border-color:var(--green);background:rgba(34,197,94,.04)}
+.upload-zone p{font-size:13px;color:var(--muted)}
+.upload-zone .icon{font-size:28px;margin-bottom:8px}
+textarea{width:100%;height:120px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:14px;font-family:inherit;font-size:13px;color:var(--ink);resize:vertical;outline:none;transition:border-color .2s}
+textarea:focus{border-color:rgba(255,255,255,.15)}
+textarea::placeholder{color:rgba(255,255,255,.2)}
+textarea.code{font-family:'SF Mono',Monaco,Consolas,monospace;height:160px}
+.btn-analyze{width:100%;padding:14px;background:var(--green);border:none;border-radius:8px;font-size:15px;font-weight:600;color:#000;cursor:pointer;transition:opacity .2s;margin-top:16px}
+.btn-analyze:hover{opacity:.9}
+.btn-analyze:disabled{opacity:.4;cursor:not-allowed}
 
-/* ── CONTACT ── */
-.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
-.contact-info h3{font-size:20px;font-weight:600;margin-bottom:16px}
-.contact-info p{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:24px}
-.contact-links{display:flex;flex-direction:column;gap:12px}
-.contact-links a{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--nav);text-decoration:none;transition:color .2s}
-.contact-links a:hover{color:var(--ink)}
-.contact-links svg{width:18px;height:18px;flex-shrink:0}
+/* ── RESULTS ── */
+.results-area{margin-top:24px;display:none}
+.results-area.visible{display:block}
+.results-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.results-header h4{font-size:16px;font-weight:600}
+.badge{padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600}
+.badge-green{background:rgba(34,197,94,.12);color:var(--green)}
+.badge-yellow{background:rgba(234,179,8,.12);color:var(--yellow)}
+.badge-red{background:rgba(239,68,68,.12);color:var(--red)}
+.finding-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:16px;margin-bottom:12px}
+.finding-card .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.finding-card h5{font-size:14px;font-weight:600}
+.finding-card .desc{font-size:13px;color:var(--muted);line-height:1.6}
+.finding-card .meta{display:flex;gap:12px;margin-top:10px;font-size:12px;color:var(--muted)}
+.risk-score{text-align:center;padding:32px;background:rgba(255,255,255,.02);border-radius:10px;margin-bottom:20px}
+.risk-score .score{font-size:56px;font-weight:700}
+.risk-score .label{font-size:14px;color:var(--muted);margin-top:4px}
+.progress-bar{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:12px}
+.progress-bar .fill{height:100%;background:var(--green);border-radius:2px;transition:width .3s}
+.status-text{font-size:13px;color:var(--muted);margin-top:8px}
 
 /* ── FOOTER ── */
-footer{text-align:center;padding:60px;border-top:1px solid rgba(255,255,255,.06);font-size:13px;color:var(--muted)}
+footer{text-align:center;padding:48px;border-top:1px solid rgba(255,255,255,.06);font-size:13px;color:var(--muted)}
 
 /* ── ANIMATIONS ── */
-@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
-.animate{opacity:0;transform:translateY(30px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.animate{opacity:0;transform:translateY(24px);transition:opacity .6s var(--ease),transform .6s var(--ease)}
 .animate.visible{opacity:1;transform:translateY(0)}
-.hero-content h1{animation:fadeUp .8s var(--ease) both .1s}
-.hero-content p{animation:fadeUp .8s var(--ease) both .2s}
-.hero-actions{animation:fadeUp .8s var(--ease) both .3s}
-@media(prefers-reduced-motion:reduce){.animate,.hero-content h1,.hero-content p,.hero-actions{animation:none;transition:none;opacity:1;transform:none}}
+.hero-eyebrow{animation:fadeUp .7s var(--ease) both .05s}
+.hero-content h1{animation:fadeUp .7s var(--ease) both .1s}
+.hero-content p{animation:fadeUp .7s var(--ease) both .15s}
+.hero-actions{animation:fadeUp .7s var(--ease) both .2s}
+.hero-stats{animation:fadeUp .7s var(--ease) both .25s}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;opacity:1!important;transform:none!important}}
 
 /* ── RESPONSIVE ── */
-@media(max-width:768px){
+@media(max-width:900px){
   .topbar{padding:0 20px}
-  .brand{left:20px;top:18px;width:28px;height:42px}
+  .brand-name{display:none}
   .links,.pill-nav{display:none}
   .burger{display:flex}
   .hero-content{padding:100px 20px 60px}
   section{padding:60px 20px}
-  .contact-grid{grid-template-columns:1fr}
+  .problem-grid{grid-template-columns:1fr}
+  .metrics-grid{grid-template-columns:repeat(2,1fr)}
+  .dash-grid{grid-template-columns:1fr}
   .agent-row{flex-direction:column;align-items:center}
-  .metrics-table{font-size:13px}
-  .metrics-table th,.metrics-table td{padding:10px 12px}
+  .hero-stats{flex-wrap:wrap;gap:24px}
 }
 </style>
 </head>
 <body>
 <div class="stage" id="stage">
-
   <!-- TOPBAR -->
   <header class="topbar" id="topbar">
-    <a href="#" class="brand" aria-label="AuditLens Home">
+    <a href="#" class="brand">
       <svg viewBox="0 0 31.5 48.5" xmlns="http://www.w3.org/2000/svg">
         <defs><linearGradient id="bg1" x1="8" y1="0" x2="34.1" y2="28.9" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#9e9e9e"/><stop offset=".28" stop-color="#a6a6a6"/><stop offset=".34" stop-color="#a3a3a3"/><stop offset=".40" stop-color="#3a3a3a"/><stop offset=".55" stop-color="#414141"/><stop offset=".60" stop-color="#7a7a7a"/><stop offset=".68" stop-color="#8e8e8e"/><stop offset=".80" stop-color="#a9a9a9"/><stop offset=".95" stop-color="#c4c4c4"/><stop offset="1" stop-color="#cccccc"/></linearGradient></defs>
         <path d="M21.5 0 L21.5 19.5 L31.5 19.5 L31.5 29 L10 48.5 L10 28.5 L0.5 28.5 L0.5 18.5 Z" fill="url(#bg1)"/>
         <rect x="0.5" y="18.5" width="9" height="10" fill="#fdfdfd"/>
         <rect x="22" y="19.5" width="9.5" height="9.5" fill="#fdfdfd"/>
       </svg>
+      <span class="brand-name">AuditLens</span>
     </a>
-    <nav class="links" aria-label="Primary">
-      <a href="#about">Audit</a>
+    <nav class="links">
+      <a href="#about">Problem</a>
       <a href="#architecture">Architecture</a>
       <a href="#evidence">Evidence</a>
-      <a href="#contact">Contact</a>
+      <a href="#dashboard">Dashboard</a>
     </nav>
-    <a href="#run" class="pill-nav">Run Audit</a>
-    <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false"><i></i><i></i></button>
+    <a href="#dashboard" class="pill-nav">Run Analysis</a>
+    <button class="burger" id="burger" aria-label="Menu" aria-expanded="false"><i></i><i></i></button>
   </header>
-
-  <!-- MOBILE MENU -->
-  <nav class="menu" id="menu" aria-hidden="true">
-    <div class="menu-inner">
-      <p class="menu-eyebrow">Menu</p>
-      <ul class="menu-list">
-        <li><a href="#about">Audit</a></li>
-        <li><a href="#architecture">Architecture</a></li>
-        <li><a href="#evidence">Evidence</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-      <div class="menu-foot">
-        <a href="#run" class="pill-menu">Run Audit</a>
-        <a href="#architecture" class="ghost-menu">View Architecture</a>
-      </div>
-    </div>
-  </nav>
+  <nav class="menu" id="menu"><a href="#about">Problem</a><a href="#architecture">Architecture</a><a href="#evidence">Evidence</a><a href="#dashboard">Dashboard</a></nav>
 
   <!-- HERO -->
   <section class="hero" id="hero">
     <div class="hero-plate">
-      <video autoplay muted loop playsinline preload="auto" aria-hidden="true">
-        <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260808_112712_da9d53df-6d27-4b12-bdf6-aa9dc2622bdf.mp4" type="video/mp4">
-      </video>
+      <video autoplay muted loop playsinline preload="auto"><source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260808_112712_da9d53df-6d27-4b12-bdf6-aa9dc2622bdf.mp4" type="video/mp4"></video>
     </div>
     <div class="hero-content">
-      <h1>Did Your Audit<br>Actually Catch Everything?</h1>
-      <p>Independent agent verification for smart contract security audits. Catch what auditors miss — in minutes, not weeks.</p>
+      <p class="hero-eyebrow">Multi-Agent Security Verification</p>
+      <h1>Did Your Audit<br>Actually Catch <em>Everything</em>?</h1>
+      <p>Four specialized agents independently analyze your smart contract and audit report. Catches what auditors miss — in minutes, not weeks.</p>
       <div class="hero-actions">
-        <a href="#run" class="pill-cta">Run Audit</a>
-        <a href="#architecture" class="ghost-btn">View Architecture</a>
+        <a href="#dashboard" class="btn-primary">Run Analysis</a>
+        <a href="#architecture" class="btn-secondary">How It Works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><div class="num">87%</div><div class="label">Detection Rate</div></div>
+        <div class="hero-stat"><div class="num">3 min</div><div class="label">Per Contract</div></div>
+        <div class="hero-stat"><div class="num">$0.85</div><div class="label">Per Analysis</div></div>
+        <div class="hero-stat"><div class="num">-81%</div><div class="label">False Positives</div></div>
       </div>
     </div>
   </section>
 
-  <!-- ABOUT -->
+  <div class="divider"></div>
+
+  <!-- PROBLEM -->
   <section id="about">
-    <h2>The Problem</h2>
-    <p class="subtitle">DeFi teams pay $50K–$200K for security audits. But audits catch only 60–70% of vulnerabilities. The question that keeps CTOs up at night: did the auditor actually catch everything?</p>
+    <p class="section-eyebrow">The Problem</p>
+    <h2>Security Audits Miss 30–40% of Vulnerabilities</h2>
+    <p class="subtitle">DeFi teams pay $50K–$200K for audits. But audits are only as good as the auditor. What if there was a way to verify the verification?</p>
     <div class="problem-grid">
       <div class="problem-card animate">
-        <span class="tag tag-bad">Current Option 1</span>
+        <span class="tag tag-red">Risky</span>
         <h3>Trust Blindly</h3>
-        <p>Deploy based on the audit report. 30–40% of vulnerabilities go undetected. One missed reentrancy vector can cost millions.</p>
+        <p>Deploy based on the audit report. One missed reentrancy vector can cost millions.</p>
+        <div class="metric red">30–40% of vulnerabilities missed</div>
       </div>
       <div class="problem-card animate">
-        <span class="tag tag-bad">Current Option 2</span>
-        <h3>Pay for Second Audit</h3>
-        <p>Spend another $50K–$200K and wait 2–4 weeks. Expensive, slow, and still not guaranteed to catch everything.</p>
+        <span class="tag tag-red">Expensive</span>
+        <h3>Second Audit</h3>
+        <p>Spend another $50K–$200K and wait 2–4 weeks. Still not guaranteed.</p>
+        <div class="metric red">$100K+ and 4 weeks</div>
       </div>
       <div class="problem-card animate">
-        <span class="tag tag-ok">Current Option 3</span>
+        <span class="tag tag-yellow">Slow</span>
         <h3>Manual Re-Review</h3>
-        <p>Engineer reads the audit report line by line. Takes 6–8 hours. Inconsistent. Misses economic attack vectors entirely.</p>
-      </div>
-      <div class="problem-card animate">
-        <span class="tag tag-good">AuditLens</span>
-        <h3>Agent Verification</h3>
-        <p>Multi-agent workflow independently analyzes the contract. Catches 87% of gaps in 3 minutes. Costs $0.85 per contract.</p>
+        <p>Engineer reads the audit line by line. Inconsistent. Misses economic attacks.</p>
+        <div class="metric yellow">6–8 hours per contract</div>
       </div>
     </div>
+    <div class="solution-card animate">
+      <span class="tag tag-green">AuditLens</span>
+      <h3>Agent Verification</h3>
+      <p>Four specialized agents independently analyze the contract. Cross-check findings. Produce a trustworthy gap report.</p>
+      <div class="metric green">87% detection in 3 minutes for $0.85</div>
+    </div>
   </section>
+
+  <div class="divider"></div>
 
   <!-- ARCHITECTURE -->
   <section id="architecture">
-    <h2>How It Works</h2>
-    <p class="subtitle">Four specialized agents, each with a specific role. A verification layer cross-checks findings and resolves contradictions.</p>
-    <div class="arch-flow">
+    <p class="section-eyebrow">Architecture</p>
+    <h2>Four Agents, One Trustworthy Report</h2>
+    <p class="subtitle">Each agent sees the contract from a different angle. The verification agent synthesizes diverse perspectives into a single reliable assessment.</p>
+    <div class="arch-visual">
       <div class="agent-row">
-        <div class="agent-box animate">
-          <h4>🔍 Static Analysis</h4>
-          <p>AST-level vulnerability pattern detection. Catches reentrancy, overflow, access control gaps.</p>
-        </div>
-        <div class="agent-box animate">
-          <h4>💰 Economic Modeling</h4>
-          <p>Simulates flash loan attacks, oracle manipulation, MEV extraction. Thinks like an attacker.</p>
-        </div>
-        <div class="agent-box animate">
-          <h4>📚 Historical Patterns</h4>
-          <p>Cross-references against known exploits: The DAO, bZx, Mango Markets, Curve, Euler.</p>
-        </div>
+        <div class="agent-node animate"><div class="icon">🔍</div><h4>Static Analysis</h4><p>AST-level pattern detection. Reentrancy, overflow, access control, unchecked calls.</p></div>
+        <div class="agent-node animate"><div class="icon">💰</div><h4>Economic Modeling</h4><p>Flash loan attacks, oracle manipulation, MEV extraction. Thinks like an attacker.</p></div>
+        <div class="agent-node animate"><div class="icon">📚</div><h4>Historical Patterns</h4><p>Cross-references against The DAO, bZx, Mango, Curve, Euler exploits.</p></div>
       </div>
-      <div class="arrow">↓</div>
-      <div class="agent-box highlight animate" style="width:340px">
-        <h4>✅ Verification Agent</h4>
-        <p>Cross-checks all findings. Resolves contradictions. Deduplicates. Assigns final confidence scores.</p>
-      </div>
-      <div class="arrow">↓</div>
-      <div class="output-box animate">
-        <h4>📊 Gap Report + Risk Score</h4>
-        <p>Actionable findings with severity ratings, evidence, and deployment recommendation</p>
-      </div>
+      <div class="arrow-down">↓</div>
+      <div class="agent-node verify animate" style="width:320px"><div class="icon">✅</div><h4>Verification Agent</h4><p>Cross-checks all findings. Resolves contradictions. Deduplicates. Assigns confidence scores.</p></div>
+      <div class="arrow-down">↓</div>
+      <div class="output-node animate"><h4>📊 Gap Report + Risk Score</h4><p>Actionable findings with severity, evidence, and deployment recommendation</p></div>
     </div>
   </section>
 
+  <div class="divider"></div>
+
   <!-- EVIDENCE -->
   <section id="evidence">
-    <h2>Evidence</h2>
-    <p class="subtitle">Tested on 15 known-vulnerable contracts with public audit reports. Here's what we found.</p>
+    <p class="section-eyebrow">Evidence</p>
+    <h2>Measured Improvement</h2>
+    <p class="subtitle">Tested on 15 known-vulnerable contracts with public audit reports. Every claim backed by data.</p>
+    <div class="metrics-grid">
+      <div class="metric-card animate"><div class="value green">87%</div><div class="label">Detection Rate</div></div>
+      <div class="metric-card animate"><div class="value green">-81%</div><div class="label">False Positives</div></div>
+      <div class="metric-card animate"><div class="value green">+142%</div><div class="label">Severity Accuracy</div></div>
+      <div class="metric-card animate"><div class="value">3 min</div><div class="label">Per Contract</div></div>
+    </div>
     <table class="metrics-table animate">
-      <thead>
-        <tr><th>Metric</th><th>Baseline (Single Prompt)</th><th>AuditLens (Multi-Agent)</th><th>Change</th></tr>
-      </thead>
+      <thead><tr><th>Metric</th><th>Baseline</th><th>AuditLens</th><th>Change</th></tr></thead>
       <tbody>
         <tr><td>Vulnerabilities detected</td><td>6/15 (40%)</td><td>13/15 (87%)</td><td class="change">+117%</td></tr>
         <tr><td>False positives per test</td><td>4.2</td><td>0.8</td><td class="change">-81%</td></tr>
@@ -279,82 +303,59 @@ footer{text-align:center;padding:60px;border-top:1px solid rgba(255,255,255,.06)
         <tr><td>Cost per contract</td><td>$0.12</td><td>$0.85</td><td style="color:var(--muted)">+608%</td></tr>
       </tbody>
     </table>
-
-    <div class="changelog">
-      <h3>Improvement Changelog</h3>
-      <div class="log-entry animate">
-        <h4>Baseline</h4>
-        <p>Single GPT-4 prompt analyzing contract against audit report. Caught obvious patterns but missed all economic attacks.</p>
-        <span class="evidence">Evidence: 40% detection, 28% false positive rate</span>
-      </div>
-      <div class="log-entry animate">
-        <h4>Iteration 1: Static Analysis Agent</h4>
-        <p>Added specialized agent with explicit vulnerability pattern matching. Detection improved but false positives doubled — agent flagged every external call as dangerous without checking for guards.</p>
-        <span class="evidence">Evidence: 53% detection, 5.1 false positives (+21%)</span>
-      </div>
-      <div class="log-entry animate">
-        <h4>Iteration 2: Economic Modeling Agent</h4>
-        <p>Added agent that thinks like an attacker — simulating flash loans, oracle manipulation, MEV. Caught 3 financial attack vectors the static analysis completely missed.</p>
-        <span class="evidence">Evidence: 74% detection, 4.8 false positives</span>
-      </div>
-      <div class="log-entry animate">
-        <h4>Iteration 3: Historical Patterns Agent</h4>
-        <p>Cross-references contract patterns against known exploits. Caught a Curve Vyper reentrancy variant with different syntax but same behavior.</p>
-        <span class="evidence">Evidence: 81% detection, 4.5 false positives</span>
-      </div>
-      <div class="log-entry animate">
-        <h4>Iteration 4: Verification Agent</h4>
-        <p>Cross-checks all findings. Resolves contradictions between agents. False positives dropped 81% while maintaining detection accuracy.</p>
-        <span class="evidence">Evidence: 87% detection, 0.8 false positives (-82%)</span>
-      </div>
+    <div class="changelog-timeline">
+      <h3 style="font-size:18px;font-weight:600;margin-bottom:24px">Improvement Changelog</h3>
+      <div class="log-item animate"><div class="log-line"></div><div class="log-content"><h4>Baseline</h4><p>Single GPT-4 prompt. Caught obvious patterns, missed all economic attacks.</p><span class="evidence">40% detection · 28% false positive rate</span></div></div>
+      <div class="log-item animate"><div class="log-line"></div><div class="log-content"><h4>+ Static Analysis Agent</h4><p>Added AST-level pattern matching. Detection improved but false positives doubled — flagged guarded calls as dangerous.</p><span class="evidence">53% detection · 5.1 false positives</span></div></div>
+      <div class="log-item animate"><div class="log-line"></div><div class="log-content"><h4>+ Economic Modeling Agent</h4><p>Flash loan and oracle attack simulation. Caught 3 financial vectors static analysis missed entirely.</p><span class="evidence">74% detection · 4.8 false positives</span></div></div>
+      <div class="log-item animate"><div class="log-line"></div><div class="log-content"><h4>+ Historical Patterns Agent</h4><p>Cross-references known exploits. Caught a Curve Vyper variant with different syntax, same behavior.</p><span class="evidence">81% detection · 4.5 false positives</span></div></div>
+      <div class="log-item animate"><div class="log-line"></div><div class="log-content"><h4>+ Verification Agent</h4><p>Cross-checks all findings. Resolves contradictions. False positives dropped 81%.</p><span class="evidence">87% detection · 0.8 false positives</span></div></div>
     </div>
   </section>
 
-  <!-- RUN -->
-  <section id="run">
-    <div class="run-box animate">
-      <h3>Run AuditLens</h3>
-      <p>Analyze your smart contract against its audit report in 3 minutes.</p>
-      <div class="code-block">
-        <span class="comment"># Clone and run</span><br>
-        <span class="cmd">git clone</span> https://github.com/thesithunyein/auditlens.git<br>
-        <span class="cmd">cd</span> auditlens<br>
-        <span class="cmd">npm install</span><br>
-        <span class="cmd">npm run</span> evaluate
-      </div>
-      <a href="https://github.com/thesithunyein/auditlens" target="_blank" class="pill-cta" style="display:inline-flex">View on GitHub</a>
-    </div>
-  </section>
+  <div class="divider"></div>
 
-  <!-- CONTACT -->
-  <section id="contact">
-    <h2>Contact</h2>
-    <div class="contact-grid">
-      <div class="contact-info">
-        <h3>Built for micro1 Frontier Engineering Challenge 2026</h3>
-        <p>AuditLens is an independent agent verification workflow for smart contract security audits. Built with purposeful multi-agent architecture to catch what auditors miss.</p>
-        <div class="contact-links">
-          <a href="https://github.com/thesithunyein/auditlens" target="_blank">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-            GitHub
-          </a>
-          <a href="https://sithunyein.com" target="_blank">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            Portfolio
-          </a>
+  <!-- DASHBOARD -->
+  <section id="dashboard">
+    <p class="section-eyebrow">Dashboard</p>
+    <h2>Run Analysis</h2>
+    <p class="subtitle">Upload your contract code and paste the audit report. The multi-agent workflow will analyze it in minutes.</p>
+    <div class="dashboard">
+      <div class="dash-grid">
+        <div class="dash-panel">
+          <h4><span class="dot" style="background:var(--green)"></span>Contract Code</h4>
+          <div class="upload-zone" id="uploadZone">
+            <div class="icon">📄</div>
+            <p>Drop a .sol file here or <strong>click to browse</strong></p>
+            <p style="font-size:11px;margin-top:4px">Supports Solidity files</p>
+          </div>
+          <input type="file" id="fileInput" accept=".sol,.txt" style="display:none">
+          <textarea class="code" id="contractInput" placeholder="// Or paste your Solidity contract code here...&#10;&#10;// SPDX-License-Identifier: MIT&#10;pragma solidity ^0.8.0;&#10;&#10;contract MyContract {&#10;  // ...&#10;}" style="margin-top:12px"></textarea>
+        </div>
+        <div class="dash-panel">
+          <h4><span class="dot" style="background:var(--yellow)"></span>Audit Report</h4>
+          <textarea id="auditInput" placeholder="Paste the audit report findings here...&#10;&#10;Example:&#10;'The contract was reviewed on 2024-01-15.&#10;No critical vulnerabilities found.&#10;Recommendations: Use OpenZeppelin ReentrancyGuard.'"></textarea>
+          <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis()">Run Multi-Agent Analysis</button>
+          <div class="progress-bar" id="progressBar" style="display:none"><div class="fill" id="progressFill" style="width:0%"></div></div>
+          <div class="status-text" id="statusText"></div>
         </div>
       </div>
-      <div class="run-box" style="text-align:left;padding:32px">
-        <h3 style="font-size:18px;margin-bottom:16px">Quick Facts</h3>
-        <p style="font-size:14px;color:var(--muted);line-height:2">
-          <strong style="color:var(--ink)">Problem:</strong> Audits miss 30–40% of vulnerabilities<br>
-          <strong style="color:var(--ink)">Solution:</strong> 4-agent verification workflow<br>
-          <strong style="color:var(--ink)">Detection:</strong> 87% (vs 40% baseline)<br>
-          <strong style="color:var(--ink)">Speed:</strong> 3 minutes per contract<br>
-          <strong style="color:var(--ink)">Cost:</strong> $0.85 per contract<br>
-          <strong style="color:var(--ink)">False Positives:</strong> 0.8 per test<br>
-          <strong style="color:var(--ink)">Hot Take:</strong> Agents match patterns but miss preconditions
-        </p>
+
+      <!-- RESULTS -->
+      <div class="results-area" id="results">
+        <div class="results-header">
+          <h4>Analysis Results</h4>
+          <span class="badge badge-green" id="riskBadge">Low Risk</span>
+        </div>
+        <div class="risk-score">
+          <div class="score" id="riskScore">--</div>
+          <div class="label">Risk Score (0–100)</div>
+        </div>
+        <div id="findingsList"></div>
+        <div style="margin-top:20px;padding:16px;background:rgba(255,255,255,.02);border-radius:8px">
+          <h4 style="font-size:14px;font-weight:600;margin-bottom:8px">Summary</h4>
+          <p id="summaryText" style="font-size:13px;color:var(--muted);line-height:1.6"></p>
+        </div>
       </div>
     </div>
   </section>
@@ -365,21 +366,90 @@ footer{text-align:center;padding:60px;border-top:1px solid rgba(255,255,255,.06)
 </div>
 
 <script>
+// ── Menu ──
 (function(){
   var stage=document.getElementById('stage'),burger=document.getElementById('burger'),menu=document.getElementById('menu'),topbar=document.getElementById('topbar');
-  function close(){stage.classList.remove('is-open');burger.setAttribute('aria-expanded','false');menu.setAttribute('aria-hidden','true')}
-  burger.addEventListener('click',function(){var open=stage.classList.toggle('is-open');burger.setAttribute('aria-expanded',String(open));menu.setAttribute('aria-hidden',String(!open))});
+  function close(){stage.classList.remove('is-open');burger.setAttribute('aria-expanded','false')}
+  burger.addEventListener('click',function(){var o=stage.classList.toggle('is-open');burger.setAttribute('aria-expanded',String(o))});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
   menu.querySelectorAll('a').forEach(function(a){a.addEventListener('click',close)});
-  window.addEventListener('resize',function(){if(window.innerWidth/window.innerHeight>1.1)close()});
-
-  // Scroll animations
-  var observer=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:0.1});
-  document.querySelectorAll('.animate').forEach(function(el){observer.observe(el)});
-
-  // Topbar scroll effect
+  var obs=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)e.target.classList.add('visible')})},{threshold:.1});
+  document.querySelectorAll('.animate').forEach(function(el){obs.observe(el)});
   window.addEventListener('scroll',function(){topbar.classList.toggle('scrolled',window.scrollY>50)});
 })();
+
+// ── File Upload ──
+var uploadZone=document.getElementById('uploadZone'),fileInput=document.getElementById('fileInput'),contractInput=document.getElementById('contractInput');
+uploadZone.addEventListener('click',function(){fileInput.click()});
+uploadZone.addEventListener('dragover',function(e){e.preventDefault();uploadZone.classList.add('dragging')});
+uploadZone.addEventListener('dragleave',function(){uploadZone.classList.remove('dragging')});
+uploadZone.addEventListener('drop',function(e){e.preventDefault();uploadZone.classList.remove('dragging');handleFile(e.dataTransfer.files[0])});
+fileInput.addEventListener('change',function(){if(fileInput.files[0])handleFile(fileInput.files[0])});
+function handleFile(file){
+  var reader=new FileReader();
+  reader.onload=function(e){contractInput.value=e.target.result;uploadZone.innerHTML='<div class="icon">✅</div><p><strong>'+file.name+'</strong></p><p style="font-size:11px;margin-top:4px">'+(file.size/1024).toFixed(1)+' KB loaded</p>'};
+  reader.readAsText(file);
+}
+
+// ── Analysis ──
+async function runAnalysis(){
+  var contract=contractInput.value.trim();
+  var audit=document.getElementById('auditInput').value.trim();
+  if(!contract||!audit){alert('Please provide both contract code and audit report');return}
+
+  var btn=document.getElementById('analyzeBtn'),progress=document.getElementById('progressBar'),fill=document.getElementById('progressFill'),status=document.getElementById('statusText');
+  btn.disabled=true;btn.textContent='Analyzing...';progress.style.display='block';
+  document.getElementById('results').classList.remove('visible');
+
+  var steps=['Sending to agents...','Running Static Analysis...','Running Economic Modeling...','Running Historical Patterns...','Cross-checking findings...','Generating report...'];
+  var step=0;
+  var interval=setInterval(function(){if(step<steps.length-1){step++;fill.style.width=((step+1)/steps.length*100)+'%';status.textContent=steps[step]}},2000);
+  status.textContent=steps[0];fill.style.width='10%';
+
+  try{
+    var res=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contract:contract,auditReport:audit})});
+    var data=await res.json();
+    clearInterval(interval);fill.style.width='100%';status.textContent='Complete!';
+
+    if(data.error){throw new Error(data.error)}
+    showResults(data);
+  }catch(err){
+    clearInterval(interval);status.textContent='Error: '+err.message;fill.style.width='0%';
+  }finally{
+    btn.disabled=false;btn.textContent='Run Multi-Agent Analysis';
+  }
+}
+
+function showResults(data){
+  var results=document.getElementById('results');results.classList.add('visible');
+  var findings=data.advanced?.agents?.verification?.verified_findings||data.baseline||[];
+  var riskScore=data.advanced?.agents?.verification?.overall_risk_score||Math.min(findings.length*15,100);
+
+  // Risk score
+  document.getElementById('riskScore').textContent=riskScore;
+  var badge=document.getElementById('riskBadge');
+  if(riskScore>=70){badge.textContent='High Risk';badge.className='badge badge-red';document.getElementById('riskScore').style.color='var(--red)'}
+  else if(riskScore>=40){badge.textContent='Medium Risk';badge.className='badge badge-yellow';document.getElementById('riskScore').style.color='var(--yellow)'}
+  else{badge.textContent='Low Risk';badge.className='badge badge-green';document.getElementById('riskScore').style.color='var(--green)'}
+
+  // Findings
+  var list=document.getElementById('findingsList');list.innerHTML='';
+  findings.forEach(function(f){
+    var sev=f.severity||'medium';
+    var color=sev==='critical'?'var(--red)':sev==='high'?'#f97316':sev==='medium'?'var(--yellow)':'var(--muted)';
+    list.innerHTML+='<div class="finding-card"><div class="top"><h5>'+esc(f.vulnerability||'Unknown')+'</h5><span class="badge" style="background:'+color+'20;color:'+color+'">'+sev.toUpperCase()+'</span></div><div class="desc">'+esc(f.description||'')+'</div><div class="meta"><span>Confidence: '+(f.confidence||'?')+'%</span>'+(f.evidence?'<span>Found by: '+f.evidence.join(', ')+'</span>':'')+'</div></div>';
+  });
+
+  // Summary
+  var criticals=findings.filter(function(f){return f.severity==='critical'||f.severity==='high'}).length;
+  document.getElementById('summaryText').textContent='Found '+findings.length+' vulnerabilities ('+criticals+' critical/high). '+
+    (data.comparison?'Baseline detected '+data.comparison.baseline_count+', AuditLens detected '+data.comparison.advanced_count+' ('+data.comparison.detection_change+' improvement).':'')+
+    ' Analysis completed in '+((data.metadata?.time_ms||0)/1000).toFixed(1)+'s.';
+
+  results.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
 </script>
 </body>
 </html>
