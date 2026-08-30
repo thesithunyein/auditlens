@@ -1,0 +1,15 @@
+{
+  "name": "auditlens",
+  "version": "1.0.0",
+  "description": "Independent agent verification for smart contract security audits",
+  "type": "module",
+  "scripts": {
+    "dev": "npx serve .",
+    "baseline": "node src/baseline.js",
+    "advanced": "node src/advanced.js",
+    "evaluate": "node src/evaluate.js"
+  },
+  "dependencies": {
+    "openai": "^4.0.0"
+  }
+}
