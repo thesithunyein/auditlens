@@ -50,6 +50,17 @@ export default async function handler(req, res) {
     // Compute comparison
     const baselineFindings = Array.isArray(baseline) ? baseline : [];
     const advancedFindings = advanced?.agents?.verification?.verified_findings || [];
+    // Also collect specialist findings that verification may have missed
+    const specialistFindings = [];
+    const staticAgent = advanced?.agents?.static_analysis;
+    const economicAgent = advanced?.agents?.economic_modeling;
+    const historicalAgent = advanced?.agents?.historical_patterns;
+    if (staticAgent && !Array.isArray(staticAgent) && staticAgent.vulnerability) specialistFindings.push({ vulnerability: staticAgent.vulnerability, severity: staticAgent.severity || 'medium', description: staticAgent.description || '', confidence: staticAgent.confidence || 50, evidence: ['static_analysis'] });
+    if (Array.isArray(economicAgent)) economicAgent.forEach(f => { if (f.vulnerability) specialistFindings.push({ vulnerability: f.vulnerability, severity: f.severity || 'medium', description: f.scenario || f.description || '', confidence: f.confidence || 30, evidence: ['economic_modeling'], impact: f.impact || '' }); });
+    if (Array.isArray(historicalAgent)) historicalAgent.forEach(f => { if (f.vulnerability) specialistFindings.push({ vulnerability: f.vulnerability, severity: f.risk_level || 'medium', description: f.similarity || f.description || '', confidence: f.confidence || 50, evidence: ['historical_patterns'] }); });
+    // Merge: verified first, then specialist findings not already in verified
+    const verifiedNames = new Set(advancedFindings.map(f => f.vulnerability?.toLowerCase()));
+    specialistFindings.forEach(f => { if (!verifiedNames.has(f.vulnerability?.toLowerCase())) advancedFindings.push(f); });
 
     const comparison = {
       baseline_count: baselineFindings.length,
@@ -187,17 +198,20 @@ const HISTORICAL_PROMPT = `You are a historical exploit pattern matching agent.
 Cross-reference against: The DAO (2016), Parity (2017), bZx (2020), Harvest (2020), Cream (2021), Mango (2022), Curve (2023), Euler (2023).
 For each match output JSON: { "vulnerability": "name", "historical_exploit": "name and year", "similarity": "what's similar", "risk_level": "high|medium|low", "confidence": 0-100 }`;
 
-const VERIFICATION_PROMPT = `You are a verification agent. Cross-check findings from three specialist agents.
-1. Cross-check for contradictions
-2. Resolve conflicting severity ratings
-3. Deduplicate similar findings
-4. Assign final confidence scores
-5. Identify TOP 5 most critical findings
+const VERIFICATION_PROMPT = `You are a verification agent. PRESERVE all findings while cross-checking quality.
 
-Input: JSON with static_analysis, economic_modeling, historical_patterns arrays.
+Rules:
+1. DO NOT discard or merge findings - keep every unique vulnerability from every agent
+2. If multiple agents found the same issue, combine into ONE finding but note all agents
+3. If agents disagree on severity, pick the HIGHEST severity
+4. Add any NEW vulnerabilities you identify from cross-referencing
+5. Assign overall risk score based on the HIGHEST severity finding
+
+Input: JSON with static_analysis, economic_modeling, historical_patterns.
 Output JSON: {
-  "verified_findings": [{ "vulnerability": "name", "severity": "critical|high|medium|low", "description": "unified description", "evidence": ["which agents found this"], "confidence": 0-100, "agents_agree": true|false }],
-  "contradictions": [{ "finding": "what's disputed", "resolution": "which is correct" }],
-  "top_5_critical": ["vulnerability names"],
+  "verified_findings": [{ "vulnerability": "name", "severity": "critical|high|medium|low", "description": "clear description", "evidence": ["agent names"], "confidence": 0-100, "agents_agree": true|false, "impact": "potential damage" }],
+  "contradictions": [],
   "overall_risk_score": 0-100
-}`;
+}
+
+IMPORTANT: Include ALL vulnerabilities. Do not reduce the count.";
