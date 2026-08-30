@@ -441,10 +441,15 @@ function showResults(data){
   });
 
   // Summary
-  var criticals=findings.filter(function(f){return f.severity==='critical'||f.severity==='high'}).length;
-  document.getElementById('summaryText').textContent='Found '+findings.length+' vulnerabilities ('+criticals+' critical/high). '+
-    (data.comparison?'Baseline detected '+data.comparison.baseline_count+', AuditLens detected '+data.comparison.advanced_count+' ('+data.comparison.detection_change+' improvement).':'')+
-    ' Analysis completed in '+((data.metadata?.time_ms||0)/1000).toFixed(1)+'s.';
+  var criticals=findings.filter(function(f){var s=(f.severity||'').toLowerCase();return s==='critical'||s==='high'}).length;
+  var compText='';
+  if(data.comparison){
+    var bc=data.comparison.baseline_count,ac=data.comparison.advanced_count;
+    if(ac>bc) compText='Baseline detected '+bc+', AuditLens detected '+ac+' (+'+Math.round(((ac-bc)/Math.max(bc,1))*100)+'% improvement).';
+    else if(ac===bc) compText='Both detected '+ac+' vulnerabilities.';
+    else compText='Baseline detected '+bc+', AuditLens detected '+ac+'. Verification reduced false positives.';
+  }
+  document.getElementById('summaryText').textContent='Found '+findings.length+' vulnerabilities ('+criticals+' critical/high). '+compText+' Analysis completed in '+((data.metadata?.time_ms||0)/1000).toFixed(1)+'s.';
 
   results.scrollIntoView({behavior:'smooth',block:'start'});
 }
