@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { contract, auditReport, model = 'Qwen/Qwen3.5-27B' } = req.body || {};
+  const { contract, auditReport, model = 'Qwen/Qwen2.5-7B-Instruct' } = req.body || {};
   if (!contract || !auditReport) {
     return res.status(400).json({ error: 'contract and auditReport are required' });
   }
