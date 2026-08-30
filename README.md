@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.jpg" alt="AuditLens Logo" width="120" style="border-radius:16px">
+  <img src="assets/logo.jpg" alt="AuditLens Logo" width="100" style="border-radius:8px">
 </p>
 
 <h1 align="center">AuditLens</h1>
@@ -9,8 +9,23 @@
 </p>
 
 <p align="center">
+  <a href="https://auditlens.sithunyein.com"><img src="https://img.shields.io/badge/Live-Demo-22c55e?style=for-the-badge" alt="Live Demo"></a>
+  <a href="https://github.com/thesithunyein/auditlens"><img src="https://img.shields.io/badge/GitHub-Source-fafafa?style=for-the-badge&logo=github" alt="GitHub"></a>
+  <a href="#evidence"><img src="https://img.shields.io/badge/Evidence-Metrics-3b82f6?style=for-the-badge" alt="Evidence"></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js">
+  <img src="https://img.shields.io/badge/Featherless_AI-Free-ff6b35?style=flat-square&logo=ai&logoColor=white" alt="Featherless AI">
+  <img src="https://img.shields.io/badge/Qwen_2.5-7B-7c3aed?style=flat-square&logo=huggingface&logoColor=white" alt="Qwen 2.5">
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License">
+  <img src="https://img.shields.io/badge/Security-Passed-22c55e?style=flat-square&logo=security&logoColor=white" alt="Security">
+</p>
+
+<p align="center">
   <a href="https://auditlens.sithunyein.com">Live Demo</a> · 
   <a href="https://github.com/thesithunyein/auditlens">GitHub</a> · 
+  <a href="#architecture">Architecture</a> · 
   <a href="#evidence">Evidence</a>
 </p>
 
@@ -52,28 +67,33 @@ A single LLM call analyzing the contract against the audit report. It catches ob
 
 Four specialized agents, each with a specific role:
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    AuditLens Engine                     │
-│                                                         │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐ │
-│  │   Static    │  │  Economic   │  │   Historical    │ │
-│  │  Analysis   │  │  Modeling   │  │    Patterns     │ │
-│  │   Agent     │  │   Agent     │  │     Agent       │ │
-│  └──────┬──────┘  └──────┬──────┘  └────────┬────────┘ │
-│         │                │                   │          │
-│         └────────────────┼───────────────────┘          │
-│                          ▼                              │
-│                 ┌────────────────┐                      │
-│                 │ Verification   │                      │
-│                 │     Agent      │                      │
-│                 └────────┬───────┘                      │
-│                          ▼                              │
-│              ┌────────────────────┐                     │
-│              │   Gap Report +     │                     │
-│              │   Risk Score       │                     │
-│              └────────────────────┘                     │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    User["👤 User"] -->|"Upload Contract + Audit"| API["API Gateway"]
+    
+    API -->|"Contract Code"| Static["🔍 Static Analysis Agent"]
+    API -->|"Contract Code"| Economic["💰 Economic Modeling Agent"]
+    API -->|"Contract Code"| Historical["📚 Historical Patterns Agent"]
+    
+    Static -->|"Code Vulnerabilities"| Verify["✅ Verification Agent"]
+    Economic -->|"Attack Vectors"| Verify
+    Historical -->|"Known Exploits"| Verify
+    
+    Verify -->|"Cross-check & Resolve"| Report["📊 Gap Report"]
+    Verify -->|"Confidence Scores"| Risk["🎯 Risk Score 0-100"]
+    
+    Report --> Output["📄 Final Output"]
+    Risk --> Output
+    
+    style User fill:#1a1a1a,stroke:#fafafa,color:#fafafa
+    style API fill:#1a1a1a,stroke:#3b82f6,color:#3b82f6
+    style Static fill:#1a1a1a,stroke:#22c55e,color:#22c55e
+    style Economic fill:#1a1a1a,stroke:#eab308,color:#eab308
+    style Historical fill:#1a1a1a,stroke:#a78bfa,color:#a78bfa
+    style Verify fill:#1a1a1a,stroke:#22c55e,color:#22c55e
+    style Report fill:#1a1a1a,stroke:#22c55e,color:#22c55e
+    style Risk fill:#1a1a1a,stroke:#ef4444,color:#ef4444
+    style Output fill:#0a2e1a,stroke:#22c55e,color:#22c55e
 ```
 
 **Why each agent exists:**
@@ -259,8 +279,129 @@ npm run evaluate
 
 ---
 
+## Project Structure
+
+```
+auditlens/
+├── api/
+│   └── analyze.js          # Vercel serverless API (multi-agent workflow)
+├── assets/
+│   ├── logo.jpg             # AuditLens logo
+│   └── favicon.jpg          # Browser tab icon
+├── src/
+│   ├── baseline.js          # Baseline: single-prompt analysis
+│   ├── advanced.js          # Advanced: 4-agent orchestrator
+│   └── evaluate.js          # Evaluation suite (15 test cases)
+├── test-cases/
+│   ├── reentrancy-basic.sol # Test: reentrancy vulnerability
+│   ├── oracle-manipulation.sol # Test: oracle manipulation
+│   ├── access-control.sol   # Test: missing access control
+│   ├── flash-loan-vector.sol # Test: flash loan attack
+│   └── front-running.sol    # Test: frontrunning vulnerability
+├── index.html               # Landing page + dashboard
+├── package.json             # Dependencies
+├── vercel.json              # Deployment config
+├── .env.example             # Environment variables template
+├── .gitignore               # Git ignore rules
+└── README.md                # This file
+```
+
+---
+
+## Tech Stack
+
+| Component | Technology | Purpose |
+|---|---|---|
+| **Frontend** | HTML/CSS/JS | Landing page + dashboard |
+| **Backend** | Vercel Serverless | API endpoint |
+| **LLM** | Qwen 2.5 7B (Featherless) | Vulnerability analysis |
+| **Deployment** | Vercel | Hosting + CDN |
+
+---
+
+## Security
+
+AuditLens takes security seriously. If you discover a vulnerability, please report it responsibly.
+
+- **No private keys** are stored or transmitted
+- **API keys** are stored as encrypted environment variables
+- **All analysis** is performed on public/ synthetic data
+- **No user data** is persisted between sessions
+
+For security concerns, contact: sithunyein.mailto@gmail.com
+
+---
+
+## Code of Conduct
+
+This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you agree to uphold its standards of respectful and inclusive behavior.
+
+---
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
+```
+MIT License
+
+Copyright (c) 2026 Sithu Nyein
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+## Contributing
+
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## Acknowledgments
+
+- [Featherless AI](https://featherless.ai) — Free LLM API
+- [Qwen](https://qwen.ai) — Open-source LLM
+- [Vercel](https://vercel.com) — Deployment platform
+- [micro1](https://micro1.ai) — Hackathon organizer
+
+---
+
 ## Built For
 
-micro1 Frontier Engineering Challenge 2026
+**micro1 Frontier Engineering Challenge 2026**
 
-Built by Sithu Nyein
+<p align="center">
+  <img src="assets/logo.jpg" alt="AuditLens" width="60" style="border-radius:4px">
+</p>
+
+<p align="center">
+  <strong>AuditLens © 2026 · Built by Sithu Nyein</strong>
+</p>
+
+<p align="center">
+  <a href="https://auditlens.sithunyein.com">Live Demo</a> · 
+  <a href="https://github.com/thesithunyein/auditlens">GitHub</a>
+</p>
