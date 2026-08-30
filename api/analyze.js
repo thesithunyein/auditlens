@@ -18,9 +18,23 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'contract and auditReport are required' });
   }
 
-  const apiKey = process.env.FEATHERLESS_API_KEY;
-  if (!apiKey) {
+  // Support multiple API keys for parallel requests
+  const apiKeys = [
+    process.env.FEATHERLESS_API_KEY,
+    process.env.FEATHERLESS_API_KEY_2,
+    process.env.FEATHERLESS_API_KEY_3
+  ].filter(Boolean);
+  
+  if (apiKeys.length === 0) {
     return res.status(500).json({ error: 'FEATHERLESS_API_KEY not configured' });
+  }
+  
+  // Round-robin key selection for load balancing
+  let keyIndex = 0;
+  function getNextKey() {
+    const key = apiKeys[keyIndex % apiKeys.length];
+    keyIndex++;
+    return key;
   }
 
   try {
@@ -120,30 +134,41 @@ async function runAdvanced(apiKey, model, contract, auditReport) {
   };
 }
 
-async function runAgent(apiKey, model, systemPrompt, content) {
-  const response = await fetch('https://api.featherless.ai/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content }
-      ],
-      temperature: 0.1,
-      max_tokens: 4000
-    })
-  });
+async function runAgent(apiKey, model, systemPrompt, content, retries = 2) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const key = getNextKey();
+      const response = await fetch('https://api.featherless.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content }
+          ],
+          temperature: 0.1,
+          max_tokens: 4000
+        })
+      });
 
-  const data = await response.json();
-  if (data.error) throw new Error(data.error.message);
+      const data = await response.json();
+      if (data.error) {
+        if (attempt < retries) continue;
+        throw new Error(data.error.message);
+      }
 
-  const text = data.choices?.[0]?.message?.content || '{}';
-  try { return JSON.parse(text); }
-  catch {
-    const match = text.match(/```json?\s*([\s\S]*?)```/);
-    if (match) return JSON.parse(match[1]);
-    return { raw: text, parse_error: true };
+      const text = data.choices?.[0]?.message?.content || '{}';
+      try { return JSON.parse(text); }
+      catch {
+        const match = text.match(/```json?\s*([\s\S]*?)```/);
+        if (match) return JSON.parse(match[1]);
+        return { raw: text, parse_error: true };
+      }
+    } catch (err) {
+      if (attempt < retries) continue;
+      throw err;
+    }
   }
 }
 
