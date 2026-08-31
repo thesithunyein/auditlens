@@ -11,7 +11,7 @@
  */
 
 const FEATHERLESS_BASE_URL = 'https://api.featherless.ai/v1';
-const MODEL = 'Qwen/Qwen2.5-7B-Instruct';
+const MODEL = 'deepseek-ai/DeepSeek-V4-Flash';
 
 // ─── AGENT 1: Static Analysis ───
 const STATIC_ANALYSIS_PROMPT = `You are a specialized static analysis agent for Solidity smart contracts.

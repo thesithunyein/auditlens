@@ -9,7 +9,7 @@
  */
 
 const FEATHERLESS_BASE_URL = 'https://api.featherless.ai/v1';
-const MODEL = 'Qwen/Qwen2.5-7B-Instruct';
+const MODEL = 'deepseek-ai/DeepSeek-V4-Flash';
 
 const SYSTEM_PROMPT = `You are a smart contract security auditor. 
 Analyze the provided Solidity contract code and audit report. 
