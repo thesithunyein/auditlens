@@ -72,7 +72,7 @@ Output JSON with this EXACT structure:
   "overall_risk_score": 0-100
 }
 
-REMINDER: Output at least as many findings as were provided. Count them before submitting.";
+REMINDER: Output at least as many findings as were provided. Count them before submitting.`;
 
 // ─── ORCHESTRATOR ───
 async function callLLM(apiKey, systemPrompt, content) {
