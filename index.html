@@ -497,6 +497,20 @@ function showResults(data){
     list.innerHTML+='<div class="finding-card"><div class="top"><h5>'+esc(f.vulnerability||'Unknown')+'</h5><span class="badge" style="background:'+color+'20;color:'+color+'">'+sev.toUpperCase()+'</span></div><div class="desc">'+esc(f.description||'')+'</div><div class="meta"><span>Confidence: '+(f.confidence||'?')+'%</span>'+(f.evidence?'<span>Found by: '+f.evidence.join(', ')+'</span>':'')+'</div></div>';
   });
 
+  // Synthesis report (professional audit report)
+  var synth=data.advanced?.agents?.synthesis;
+  var synthDiv=document.getElementById('synthesisReport');
+  if(!synthDiv){synthDiv=document.createElement('div');synthDiv.id='synthesisReport';synthDiv.style.cssText='margin-top:24px;padding:20px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:4px';document.getElementById('findingsList').parentNode.appendChild(synthDiv);}
+  if(synth){
+    var reportText=synth.raw||synth.report||'';
+    if(!reportText && typeof synth==='string') reportText=synth;
+    if(reportText){
+      // Simple markdown to HTML conversion
+      var html=reportText.replace(/^## (.+)$/gm,'<h4 style="color:var(--ink);margin:16px 0 8px;font-size:15px">$1</h4>').replace(/^### (.+)$/gm,'<h5 style="color:var(--ink);margin:12px 0 6px;font-size:13px">$1</h5>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+      synthDiv.innerHTML='<h4 style="color:var(--green);margin-bottom:12px;font-size:16px">\ud83d\udcc4 Professional Audit Report</h4><div style="font-size:13px;color:var(--muted);line-height:1.7">'+html+'</div>';
+    }
+  }
+
   // Summary
   var criticals=findings.filter(function(f){var s=(f.severity||'').toLowerCase();return s==='critical'||s==='high'}).length;
   var compText='';
@@ -506,7 +520,7 @@ function showResults(data){
     else if(ac===bc) compText='Both detected '+ac+' vulnerabilities.';
     else compText='Baseline detected '+bc+', AuditLens detected '+ac+'. Verification reduced false positives.';
   }
-  document.getElementById('summaryText').textContent='Found '+findings.length+' vulnerabilities ('+criticals+' critical/high). '+compText+' Analysis completed in '+((data.metadata?.time_ms||0)/1000).toFixed(1)+'s.';
+  document.getElementById('summaryText').textContent='Found '+findings.length+' vulnerabilities ('+criticals+' critical/high). '+compText+' Analysis completed in '+((data.metadata?.time_ms||0)/1000).toFixed(1)+'s. '+((data.metadata?.agents_used||0)>4?'5-agent analysis with professional audit report.':'');
 
   // Add human reviewer disclaimer
   var disclaimer=document.getElementById('disclaimer');
