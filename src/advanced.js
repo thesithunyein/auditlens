@@ -6,15 +6,16 @@
  * 2. Economic Modeling Agent — Attack simulation (flash loans, oracles)
  * 3. Historical Patterns Agent — Cross-reference known exploits
  * 4. Verification Agent — Cross-check findings, resolve contradictions
+ * 
+ * Uses Featherless AI (free tier) with Qwen 2.5 7B.
  */
 
-import OpenAI from 'openai';
-
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const FEATHERLESS_BASE_URL = 'https://api.featherless.ai/v1';
+const MODEL = 'Qwen/Qwen2.5-7B-Instruct';
 
 // ─── AGENT 1: Static Analysis ───
 const STATIC_ANALYSIS_PROMPT = `You are a specialized static analysis agent for Solidity smart contracts.
-Your ONLY job is to detect code-level vulnerability patterns by analyzing the AST structure.
+Your ONLY job is to detect code-level vulnerability patterns.
 
 Focus on:
 - Reentrancy (external calls before state updates)
@@ -23,164 +24,106 @@ Focus on:
 - Access control gaps (missing modifiers)
 - Timestamp dependence
 - Front-running vulnerabilities
-- Uninitialized storage pointers
-- Delegatecall to untrusted contracts
-- Self-destruct abuse
-- tx.origin authentication
 
-For each finding, output:
-{
-  "vulnerability": "name",
-  "severity": "critical|high|medium|low",
-  "line_range": "start-end",
-  "pattern": "what code pattern triggered this",
-  "precondition": "what must be true for this to be exploitable",
-  "confidence": 0-100
-}
+For each finding, output JSON:
+{ "vulnerability": "name", "severity": "critical|high|medium|low", "line_range": "approximate", "pattern": "what triggered this", "precondition": "what must be true", "confidence": 0-100 }
 
-Be SPECIFIC about line ranges and patterns. Do NOT flag patterns that have proper guards.`;
+Be SPECIFIC. Do NOT flag patterns that have proper guards.`;
 
 // ─── AGENT 2: Economic Modeling ───
 const ECONOMIC_MODELING_PROMPT = `You are a specialized economic attack simulation agent.
-Your ONLY job is to identify financial attack vectors on DeFi smart contracts.
+Analyze for: flash loan attacks, oracle manipulation, MEV extraction, governance attacks, liquidity manipulation, cross-contract composability risks.
 
-Analyze for:
-- Flash loan attack vectors (price manipulation, reentrancy via flash loans)
-- Oracle manipulation (single-source oracles, stale prices, TWAP bypass)
-- MEV extraction (sandwich attacks, frontrunning)
-- Governance attacks (flash loan voting, proposals)
-- Liquidity manipulation (just-in-time liquidity, pool draining)
-- Cross-contract composability risks (protocol A + protocol B = exploit)
-- Economic invariant violations (total supply > reserves, etc.)
+For each attack vector output JSON:
+{ "vulnerability": "name", "attack_type": "flash_loan|oracle|mev|governance|composability", "scenario": "step-by-step attack", "impact": "estimated loss", "confidence": 0-100 }
 
-For each attack vector:
-{
-  "attack_type": "flash_loan|oracle|mev|governance|composability",
-  "scenario": "step-by-step description of the attack",
-  "impact": "estimated financial loss or mechanism failure",
-  "requires": ["what conditions must be true"],
-  "confidence": 0-100
-}
-
-Think like an attacker. What would you exploit?`;
+Think like an attacker.`;
 
 // ─── AGENT 3: Historical Patterns ───
 const HISTORICAL_PROMPT = `You are a historical exploit pattern matching agent.
-Your ONLY job is to cross-reference contract code against known DeFi exploits.
+Cross-reference against: The DAO (2016), Parity (2017), bZx (2020), Harvest (2020), Cream (2021), Mango (2022), Curve (2023), Euler (2023).
 
-Known exploit patterns to check:
-- The DAO (2016): reentrancy via recursive calls
-- Parity Wallet (2017): uninitialized library delegatecall
-- Bancor (2018): price oracle manipulation
-- bZx (2020): flash loan price manipulation
-- Harvest Finance (2020): flash loan + price oracle
-- Cream Finance (2021): reentrancy + flash loans
-- Mango Markets (2022): oracle manipulation + position manipulation
-- Curve (2023): Vyper compiler reentrancy bug
-- Euler Finance (2023): donation attack + flash loans
-- Mango Max (2023): oracle manipulation
-- Socket Gateway (2024): approval exploit
-- Various bridge exploits: signature validation failures
-
-For each matching pattern:
-{
-  "historical_exploit": "name and year",
-  "similarity": "what's similar in this contract",
-  "difference": "what's different",
-  "risk_level": "high|medium|low",
-  "confidence": 0-100
-}
-
-Also note if the contract uses patterns from protocols that HAVE been exploited.`;
+For each match output JSON:
+{ "vulnerability": "name", "historical_exploit": "name and year", "similarity": "what's similar", "risk_level": "high|medium|low", "confidence": 0-100 }`;
 
 // ─── AGENT 4: Verification ───
-const VERIFICATION_PROMPT = `You are a verification agent. You receive findings from three specialized agents.
-Your job is to:
-1. Cross-check findings for contradictions
-2. Resolve conflicting severity ratings
-3. Deduplicate findings that describe the same issue differently
-4. Assign final confidence scores based on agreement across agents
-5. Identify the TOP 5 most critical findings
+const VERIFICATION_PROMPT = `You are a verification agent. PRESERVE all findings while cross-checking quality.
 
-Input: JSON with three arrays (static_analysis, economic_modeling, historical_patterns).
+Rules:
+1. DO NOT discard or merge findings — keep every unique vulnerability from every agent
+2. If multiple agents found the same issue, combine into ONE finding but note all agents
+3. If agents disagree on severity, pick the HIGHEST severity
+4. Assign overall risk score based on the HIGHEST severity finding
 
-Output:
+Output JSON:
 {
-  "verified_findings": [
-    {
-      "vulnerability": "name",
-      "severity": "critical|high|medium|low",
-      "description": "unified description",
-      "evidence": ["which agents found this"],
-      "confidence": 0-100,
-      "agents_agree": true|false
-    }
-  ],
-  "contradictions": [
-    {
-      "finding": "what's disputed",
-      "agent_a": "position",
-      "agent_b": "position",
-      "resolution": "which is correct and why"
-    }
-  ],
-  "top_5_critical": ["vulnerability names"],
+  "verified_findings": [{ "vulnerability": "name", "severity": "critical|high|medium|low", "description": "clear description", "evidence": ["agent names"], "confidence": 0-100, "agents_agree": true|false }],
+  "contradictions": [],
   "overall_risk_score": 0-100
-}`;
+}
+
+IMPORTANT: Include ALL vulnerabilities. Do not reduce the count.`;
 
 // ─── ORCHESTRATOR ───
-async function runAgent(name, systemPrompt, content) {
-  console.log(`  Running ${name}...`);
-  const start = Date.now();
-  
-  const response = await client.chat.completions.create({
-    model: 'gpt-4',
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content }
-    ],
-    temperature: 0.1,
-    max_tokens: 4000
+async function callLLM(apiKey, systemPrompt, content) {
+  const response = await fetch(`${FEATHERLESS_BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content }
+      ],
+      temperature: 0.1,
+      max_tokens: 4000
+    })
   });
 
-  const text = response.choices[0].message.content;
-  const elapsed = Date.now() - start;
-  console.log(`  ${name} completed in ${elapsed}ms`);
-  
-  try {
-    return JSON.parse(text);
-  } catch {
+  const data = await response.json();
+  if (data.error) throw new Error(data.error.message);
+
+  const text = data.choices?.[0]?.message?.content || '{}';
+  try { return JSON.parse(text); }
+  catch {
     const match = text.match(/```json?\s*([\s\S]*?)```/);
     if (match) return JSON.parse(match[1]);
     return { raw: text, parse_error: true };
   }
 }
 
-export async function advancedAnalysis(contractCode, auditReport) {
+export async function advancedAnalysis(contractCode, auditReport, apiKey) {
+  const key = apiKey || process.env.FEATHERLESS_API_KEY;
+  if (!key) throw new Error('FEATHERLESS_API_KEY not set');
+
   const context = `## Contract Code\n\`\`\`solidity\n${contractCode}\n\`\`\`\n\n## Audit Report\n${auditReport}`;
   
   console.log('=== AuditLens Advanced: Multi-Agent Analysis ===\n');
   const totalStart = Date.now();
 
-  // Run agents in parallel (they're independent)
+  // Phase 1: Run 3 specialist agents in parallel
   console.log('Phase 1: Specialist Agents');
   const [staticResult, economicResult, historicalResult] = await Promise.all([
-    runAgent('Static Analysis Agent', STATIC_ANALYSIS_PROMPT, context),
-    runAgent('Economic Modeling Agent', ECONOMIC_MODELING_PROMPT, context),
-    runAgent('Historical Patterns Agent', HISTORICAL_PROMPT, context)
+    callLLM(key, STATIC_ANALYSIS_PROMPT, context),
+    callLLM(key, ECONOMIC_MODELING_PROMPT, context),
+    callLLM(key, HISTORICAL_PROMPT, context)
   ]);
 
-  console.log('\nPhase 2: Verification Agent');
+  // Phase 2: Verification agent
+  console.log('Phase 2: Verification Agent');
   const verificationInput = JSON.stringify({
     static_analysis: staticResult,
     economic_modeling: economicResult,
     historical_patterns: historicalResult
   }, null, 2);
 
-  const verified = await runAgent('Verification Agent', VERIFICATION_PROMPT, verificationInput);
+  const verified = await callLLM(key, VERIFICATION_PROMPT, verificationInput);
 
   const totalTime = Date.now() - totalStart;
-  console.log(`\nTotal analysis time: ${totalTime}ms`);
+  console.log(`Total analysis time: ${totalTime}ms`);
 
   return {
     agents: {
@@ -192,7 +135,7 @@ export async function advancedAnalysis(contractCode, auditReport) {
     metadata: {
       total_time_ms: totalTime,
       agents_used: 4,
-      model: 'gpt-4'
+      model: MODEL
     }
   };
 }
@@ -200,5 +143,5 @@ export async function advancedAnalysis(contractCode, auditReport) {
 if (process.argv[1] && process.argv[1].endsWith('advanced.js')) {
   console.log('=== AuditLens Advanced ===');
   console.log('Usage: import { advancedAnalysis } from "./advanced.js"');
-  console.log('Or run evaluate.js for full comparison');
+  console.log('Or run: node src/evaluate.js');
 }

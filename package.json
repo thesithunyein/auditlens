@@ -9,7 +9,8 @@
     "advanced": "node src/advanced.js",
     "evaluate": "node src/evaluate.js"
   },
-  "dependencies": {
-    "openai": "^4.0.0"
+  "dependencies": {},
+  "engines": {
+    "node": ">=18"
   }
 }

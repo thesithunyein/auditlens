@@ -1,88 +1,172 @@
 /**
  * AuditLens Evaluation Suite
  * 
- * Runs baseline and advanced analysis on test cases,
- * compares results, and generates metrics.
+ * Runs baseline and advanced analysis on 15 test cases,
+ * compares results, and generates measured metrics.
+ * 
+ * Usage: FEATHERLESS_API_KEY=your_key node src/evaluate.js
  */
 
 import { baselineAnalysis } from './baseline.js';
 import { advancedAnalysis } from './advanced.js';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-const TEST_CASES_DIR = join(process.cwd(), 'test-cases');
-const RESULTS_DIR = join(process.cwd(), 'results');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const TEST_CASES_DIR = join(__dirname, '..', 'test-cases');
+const RESULTS_DIR = join(__dirname, '..', 'results');
 
-// ─── Test Case Structure ───
-// Each test case has:
-// - name: identifier
-// - contract: Solidity code (or path to file)
-// - audit_report: The audit's conclusion
-// - known_vulnerabilities: What the audit MISSED (ground truth)
-// - severity_ground_truth: Expected severity for each
+// Create results dir
+if (!existsSync(RESULTS_DIR)) mkdirSync(RESULTS_DIR, { recursive: true });
 
+// ─── 15 Test Cases with Ground Truth ───
 const TEST_CASES = [
   {
     name: 'reentrancy-basic',
-    description: 'Classic reentrancy vulnerability missed by audit',
+    description: 'Classic reentrancy — external call before state update',
     known_vulnerabilities: [
-      { vulnerability: 'Reentrancy', severity: 'critical', description: 'External call before state update allows recursive withdrawal' }
+      { vulnerability: 'Reentrancy', severity: 'critical' }
     ],
     audit_said: 'Contract passes all security checks. No critical vulnerabilities found.'
   },
   {
     name: 'oracle-manipulation',
-    description: 'Single-source price oracle susceptible to manipulation',
+    description: 'Single-source price oracle susceptible to flash loan manipulation',
     known_vulnerabilities: [
-      { vulnerability: 'Oracle Manipulation', severity: 'critical', description: 'Single price source can be manipulated via flash loan' }
+      { vulnerability: 'Oracle Manipulation', severity: 'critical' }
     ],
     audit_said: 'Price feeds are integrated correctly. Oracle usage follows best practices.'
   },
   {
     name: 'access-control',
-    description: 'Missing access control on critical function',
+    description: 'Admin function callable by anyone',
     known_vulnerabilities: [
-      { vulnerability: 'Missing Access Control', severity: 'high', description: 'Admin function callable by anyone' }
+      { vulnerability: 'Missing Access Control', severity: 'high' }
     ],
     audit_said: 'Function visibility is appropriately restricted.'
   },
   {
     name: 'flash-loan-vector',
-    description: 'Flash loan attack vector in lending protocol',
+    description: 'Flash loan attack vector — price manipulation within single tx',
     known_vulnerabilities: [
-      { vulnerability: 'Flash Loan Attack', severity: 'critical', description: 'Price can be manipulated within single transaction' }
+      { vulnerability: 'Flash Loan Attack', severity: 'critical' }
     ],
     audit_said: 'Lending pool implements standard security patterns.'
   },
   {
     name: 'front-running',
-    description: 'MEV frontrunning vulnerability in DEX',
+    description: 'MEV frontrunning — pending txs observable and exploitable',
     known_vulnerabilities: [
-      { vulnerability: 'Frontrunning', severity: 'medium', description: 'Pending transactions can be observed and frontrun' }
+      { vulnerability: 'Frontrunning', severity: 'medium' }
     ],
     audit_said: 'Swap function follows standard AMM patterns.'
+  },
+  {
+    name: 'donation-attack',
+    description: 'Euler-style donation attack — inflate share via direct transfer',
+    known_vulnerabilities: [
+      { vulnerability: 'Donation Attack', severity: 'critical' },
+      { vulnerability: 'Share Manipulation', severity: 'high' }
+    ],
+    audit_said: 'Share calculation follows standard formula. Deposit/withdraw is safe.'
+  },
+  {
+    name: 'price-oracle-single',
+    description: 'AMM with single price oracle, no TWAP, no access control on setPrice',
+    known_vulnerabilities: [
+      { vulnerability: 'Oracle Manipulation', severity: 'critical' },
+      { vulnerability: 'Missing Access Control', severity: 'high' }
+    ],
+    audit_said: 'Price oracle integration is functional. Swap logic is correct.'
+  },
+  {
+    name: 'delegatecall-abuse',
+    description: 'delegatecall to user-provided address — storage overwrite',
+    known_vulnerabilities: [
+      { vulnerability: 'Delegatecall Abuse', severity: 'critical' }
+    ],
+    audit_said: 'Proxy pattern is correctly implemented.'
+  },
+  {
+    name: 'uninitialized-storage',
+    description: 'Uninitialized storage pointer overwrites owner slot',
+    known_vulnerabilities: [
+      { vulnerability: 'Uninitialized Storage', severity: 'critical' }
+    ],
+    audit_said: 'Migration function follows standard pattern.'
+  },
+  {
+    name: 'selfdestruct-abuse',
+    description: 'Force-sent ETH via selfdestruct manipulates this.balance',
+    known_vulnerabilities: [
+      { vulnerability: 'Force Send ETH', severity: 'high' },
+      { vulnerability: 'Balance Manipulation', severity: 'medium' }
+    ],
+    audit_said: 'Prize distribution is fair. Balance checks are correct.'
+  },
+  {
+    name: 'signature-replay',
+    description: 'Off-chain signature without nonce — replay attack',
+    known_vulnerabilities: [
+      { vulnerability: 'Signature Replay', severity: 'critical' }
+    ],
+    audit_said: 'Signature verification is implemented correctly.'
+  },
+  {
+    name: 'governance-flash-vote',
+    description: 'Flash loan governance voting — no snapshot, current balance used',
+    known_vulnerabilities: [
+      { vulnerability: 'Flash Loan Governance', severity: 'critical' },
+      { vulnerability: 'Missing Vote Snapshot', severity: 'high' }
+    ],
+    audit_said: 'Governance voting uses token balance. Standard implementation.'
+  },
+  {
+    name: 'batch-call-reentrancy',
+    description: 'Cross-function reentrancy via deposit/collateral interaction',
+    known_vulnerabilities: [
+      { vulnerability: 'Cross-Function Reentrancy', severity: 'critical' }
+    ],
+    audit_said: 'Liquidation logic is correct. Collateral checks are proper.'
+  },
+  {
+    name: 'timelock-bypass',
+    description: 'Timelock bypass via nested calls and admin change without delay',
+    known_vulnerabilities: [
+      { vulnerability: 'Timelock Bypass', severity: 'high' },
+      { vulnerability: 'Missing Reentrancy Guard', severity: 'medium' }
+    ],
+    audit_said: 'Timelock implementation follows standard pattern.'
+  },
+  {
+    name: 'cross-chain-replay',
+    description: 'Bridge signature without chain ID — cross-chain replay',
+    known_vulnerabilities: [
+      { vulnerability: 'Cross-Chain Replay', severity: 'critical' },
+      { vulnerability: 'Missing Chain ID', severity: 'high' }
+    ],
+    audit_said: 'Bridge message verification is secure.'
   }
 ];
 
-// ─── Scoring Functions ───
-
+// ─── Scoring ───
 function scoreFindings(findings, groundTruth) {
   let detected = 0;
   let falsePositives = 0;
   let correctSeverity = 0;
 
   for (const gt of groundTruth) {
-    const match = findings.find(f => 
+    const match = findings.find(f =>
       f.vulnerability?.toLowerCase().includes(gt.vulnerability.toLowerCase()) ||
       gt.vulnerability.toLowerCase().includes(f.vulnerability?.toLowerCase() || '')
     );
     if (match) {
       detected++;
-      if (match.severity === gt.severity) correctSeverity++;
+      if (match.severity?.toLowerCase() === gt.severity?.toLowerCase()) correctSeverity++;
     }
   }
 
-  // False positives: findings not in ground truth
   for (const f of findings) {
     const isTruePositive = groundTruth.some(gt =>
       f.vulnerability?.toLowerCase().includes(gt.vulnerability.toLowerCase()) ||
@@ -100,119 +184,100 @@ function scoreFindings(findings, groundTruth) {
   };
 }
 
-// ─── Main Evaluation ───
+function aggregateMetrics(results) {
+  const valid = results.filter(r => !r.error);
+  const totalGT = valid.reduce((s, r) => s + (r.score?.total || 0), 0);
+  const totalDetected = valid.reduce((s, r) => s + (r.score?.detected || 0), 0);
+  const totalFP = valid.reduce((s, r) => s + (r.score?.false_positives || 0), 0);
+  const totalSev = valid.reduce((s, r) => s + (r.score?.detected || 0) * (r.score?.severity_accuracy || 0), 0);
 
+  return {
+    test_cases: valid.length,
+    total_ground_truth: totalGT,
+    total_detected: totalDetected,
+    accuracy: totalGT > 0 ? totalDetected / totalGT : 0,
+    avg_false_positives: valid.length > 0 ? totalFP / valid.length : 0,
+    severity_accuracy: totalDetected > 0 ? totalSev / totalDetected : 0
+  };
+}
+
+// ─── Main ───
 async function runEvaluation() {
   console.log('╔══════════════════════════════════════════╗');
   console.log('║     AuditLens Evaluation Suite           ║');
+  console.log('║     15 Test Cases × 2 Approaches         ║');
   console.log('╚══════════════════════════════════════════╝\n');
 
   const results = { baseline: [], advanced: [] };
 
-  for (const testCase of TEST_CASES) {
-    console.log(`\n━━━ Test: ${testCase.name} ━━━`);
-    console.log(`Description: ${testCase.description}`);
-    console.log(`Audit said: "${testCase.audit_said}"`);
-    console.log(`Known vulnerabilities: ${testCase.known_vulnerabilities.length}`);
+  for (const tc of TEST_CASES) {
+    console.log(`\n━━━ Test: ${tc.name} ━━━`);
+    console.log(`  ${tc.description}`);
+    console.log(`  Audit said: "${tc.audit_said}"`);
 
-    // Load contract code
-    const contractPath = join(TEST_CASES_DIR, `${testCase.name}.sol`);
+    const contractPath = join(TEST_CASES_DIR, `${tc.name}.sol`);
     let contractCode;
     if (existsSync(contractPath)) {
       contractCode = readFileSync(contractPath, 'utf-8');
     } else {
-      console.log(`  ⚠️  No contract file found at ${contractPath}`);
-      console.log(`  Using placeholder contract code`);
-      contractCode = `// Placeholder for ${testCase.name}\n// Add actual contract code to test-cases/${testCase.name}.sol`;
+      console.log(`  ⚠️  No contract file found`);
+      continue;
     }
 
-    // ─── Run Baseline ───
-    console.log('\n  [Baseline] Single-prompt analysis...');
+    // Baseline
+    console.log('  [Baseline] Single-prompt...');
     try {
-      const baselineResult = await baselineAnalysis(contractCode, testCase.audit_said);
-      const baselineScore = scoreFindings(
-        Array.isArray(baselineResult) ? baselineResult : [],
-        testCase.known_vulnerabilities
-      );
-      results.baseline.push({
-        test_case: testCase.name,
-        findings: baselineResult,
-        score: baselineScore
-      });
-      console.log(`  Baseline: ${baselineScore.detected}/${baselineScore.total} detected, ${baselineScore.false_positives} false positives`);
+      const bResult = await baselineAnalysis(contractCode, tc.audit_said);
+      const bScore = scoreFindings(Array.isArray(bResult) ? bResult : [], tc.known_vulnerabilities);
+      results.baseline.push({ test_case: tc.name, findings: bResult, score: bScore });
+      console.log(`  Baseline: ${bScore.detected}/${bScore.total} detected, ${bScore.false_positives} FP`);
     } catch (e) {
       console.log(`  Baseline error: ${e.message}`);
-      results.baseline.push({ test_case: testCase.name, error: e.message });
+      results.baseline.push({ test_case: tc.name, error: e.message });
     }
 
-    // ─── Run Advanced ───
-    console.log('\n  [Advanced] Multi-agent analysis...');
+    // Advanced
+    console.log('  [Advanced] Multi-agent...');
     try {
-      const advancedResult = await advancedAnalysis(contractCode, testCase.audit_said);
-      const advancedFindings = advancedResult.agents?.verification?.verified_findings || [];
-      const advancedScore = scoreFindings(advancedFindings, testCase.known_vulnerabilities);
-      results.advanced.push({
-        test_case: testCase.name,
-        findings: advancedResult,
-        score: advancedScore
-      });
-      console.log(`  Advanced: ${advancedScore.detected}/${advancedScore.total} detected, ${advancedScore.false_positives} false positives`);
+      const aResult = await advancedAnalysis(contractCode, tc.audit_said);
+      const aFindings = aResult.agents?.verification?.verified_findings || [];
+      const aScore = scoreFindings(aFindings, tc.known_vulnerabilities);
+      results.advanced.push({ test_case: tc.name, findings: aResult, score: aScore });
+      console.log(`  Advanced: ${aScore.detected}/${aScore.total} detected, ${aScore.false_positives} FP`);
     } catch (e) {
       console.log(`  Advanced error: ${e.message}`);
-      results.advanced.push({ test_case: testCase.name, error: e.message });
+      results.advanced.push({ test_case: tc.name, error: e.message });
     }
   }
 
-  // ─── Aggregate Metrics ───
+  // Aggregate
   console.log('\n\n╔══════════════════════════════════════════╗');
   console.log('║           AGGREGATE METRICS              ║');
   console.log('╚══════════════════════════════════════════╝\n');
 
-  const baselineMetrics = aggregateMetrics(results.baseline);
-  const advancedMetrics = aggregateMetrics(results.advanced);
+  const bMetrics = aggregateMetrics(results.baseline);
+  const aMetrics = aggregateMetrics(results.advanced);
 
-  const table = `
-| Metric                          | Baseline    | Advanced    | Change      |
-|---------------------------------|-------------|-------------|-------------|
-| Vulnerabilities detected        | ${baselineMetrics.total_detected}/${baselineMetrics.total_ground_truth} (${(baselineMetrics.accuracy * 100).toFixed(0)}%)     | ${advancedMetrics.total_detected}/${advancedMetrics.total_ground_truth} (${(advancedMetrics.accuracy * 100).toFixed(0)}%)     | +${((advancedMetrics.accuracy - baselineMetrics.accuracy) * 100).toFixed(0)}%        |
-| False positives per test        | ${baselineMetrics.avg_false_positives.toFixed(1)}         | ${advancedMetrics.avg_false_positives.toFixed(1)}         | -${((1 - advancedMetrics.avg_false_positives / Math.max(baselineMetrics.avg_false_positives, 0.1)) * 100).toFixed(0)}%        |
-| Severity accuracy               | ${(baselineMetrics.severity_accuracy * 100).toFixed(0)}%         | ${(advancedMetrics.severity_accuracy * 100).toFixed(0)}%         | +${((advancedMetrics.severity_accuracy - baselineMetrics.severity_accuracy) * 100).toFixed(0)}%        |
-`;
+  const pctChange = (a, b) => b > 0 ? ((a - b) / b * 100).toFixed(0) : 'N/A';
 
-  console.log(table);
+  console.log(`| Metric                          | Baseline           | Advanced           | Change      |`);
+  console.log(`|---------------------------------|--------------------|--------------------|-------------|`);
+  console.log(`| Vulnerabilities detected        | ${bMetrics.total_detected}/${bMetrics.total_ground_truth} (${(bMetrics.accuracy*100).toFixed(0)}%)       | ${aMetrics.total_detected}/${aMetrics.total_ground_truth} (${(aMetrics.accuracy*100).toFixed(0)}%)       | +${pctChange(aMetrics.accuracy, bMetrics.accuracy)}%     |`);
+  console.log(`| False positives per test        | ${bMetrics.avg_false_positives.toFixed(1)}               | ${aMetrics.avg_false_positives.toFixed(1)}               | -${pctChange(bMetrics.avg_false_positives, aMetrics.avg_false_positives)}%     |`);
+  console.log(`| Severity accuracy               | ${(bMetrics.severity_accuracy*100).toFixed(0)}%               | ${(aMetrics.severity_accuracy*100).toFixed(0)}%               | +${pctChange(aMetrics.severity_accuracy, bMetrics.severity_accuracy)}%     |`);
 
-  // Save results
+  // Save
   const report = {
     timestamp: new Date().toISOString(),
+    model: 'Qwen/Qwen2.5-7B-Instruct (Featherless AI)',
     test_cases: TEST_CASES.length,
-    baseline: baselineMetrics,
-    advanced: advancedMetrics,
-    comparison_table: table,
+    baseline: bMetrics,
+    advanced: aMetrics,
     detailed_results: results
   };
 
   writeFileSync(join(RESULTS_DIR, 'evaluation-report.json'), JSON.stringify(report, null, 2));
-  writeFileSync(join(RESULTS_DIR, 'metrics-table.md'), `# AuditLens Evaluation Metrics\n\n${table}`);
-
-  console.log('Results saved to results/evaluation-report.json');
-  console.log('Metrics table saved to results/metrics-table.md');
-}
-
-function aggregateMetrics(results) {
-  const valid = results.filter(r => !r.error);
-  const totalGroundTruth = valid.reduce((sum, r) => sum + (r.score?.total || 0), 0);
-  const totalDetected = valid.reduce((sum, r) => sum + (r.score?.detected || 0), 0);
-  const totalFalsePositives = valid.reduce((sum, r) => sum + (r.score?.false_positives || 0), 0);
-  const totalSeverityCorrect = valid.reduce((sum, r) => sum + (r.score?.detected || 0) * (r.score?.severity_accuracy || 0), 0);
-
-  return {
-    test_cases: valid.length,
-    total_ground_truth: totalGroundTruth,
-    total_detected: totalDetected,
-    accuracy: totalGroundTruth > 0 ? totalDetected / totalGroundTruth : 0,
-    avg_false_positives: valid.length > 0 ? totalFalsePositives / valid.length : 0,
-    severity_accuracy: totalDetected > 0 ? totalSeverityCorrect / totalDetected : 0
-  };
+  console.log('\nResults saved to results/evaluation-report.json');
 }
 
 runEvaluation().catch(console.error);
