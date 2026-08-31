@@ -48,7 +48,7 @@ AuditLens fills this gap.
 
 ## How It Works
 
-Upload your Solidity contract and the audit report. Four specialized AI agents independently analyze both, then a verification layer cross-checks everything and produces a unified risk report.
+Upload your Solidity contract and the audit report. Five specialized AI agents analyze it — three specialists in parallel, a verification agent that cross-checks everything, and a synthesis agent that produces a professional audit report with executive summary, attack scenarios, and remediation priorities.
 
 ```
 Your Contract + Audit Report
@@ -73,10 +73,17 @@ Your Contract + Audit Report
 │  │  Cross-check · Deduplicate │     │
 │  │  Resolve · Score           │     │
 │  └────────────┬───────────────┘     │
+│               ▼                     │
+│  ┌────────────────────────────┐     │
+│  │    Synthesis Agent         │     │
+│  │  JSON → Professional Report│     │
+│  │  Executive Summary · Fixes │     │
+│  └────────────┬───────────────┘     │
 └───────────────┼─────────────────────┘
                 ▼
-         Risk Report
-  Findings · Severity · Evidence
+      Professional Audit Report
+  Executive Summary · Findings · Attack Scenarios
+  Remediation Priority · Historical References
 ```
 
 ### Agent Roles
@@ -87,6 +94,7 @@ Your Contract + Audit Report
 | **Economic Modeling** | Simulates financial attack scenarios | Catches flash loans, oracle manipulation, MEV |
 | **Historical Patterns** | Cross-references known exploits | Catches variants of The DAO, Parity, bZx, Curve |
 | **Verification** | Cross-checks all specialist findings | Resolves contradictions, deduplicates, assigns confidence |
+| **Synthesis** | Converts JSON to professional report | Executive summary, attack scenarios, remediation priorities |
 
 ---
 
@@ -179,10 +187,10 @@ Expected: Runs both baseline and advanced on all 15 test contracts. Saves result
 ```
 auditlens/
 ├── api/
-│   └── analyze.js              # Vercel serverless endpoint
+│   └── analyze.js              # Vercel serverless endpoint (5 agents)
 ├── src/
 │   ├── baseline.js             # Single-prompt analysis
-│   ├── advanced.js             # 4-agent orchestrator
+│   ├── advanced.js             # 5-agent orchestrator
 │   └── evaluate.js             # 15-case evaluation suite
 ├── test-cases/
 │   ├── reentrancy-basic.sol    # Classic reentrancy
@@ -232,6 +240,7 @@ auditlens/
 | **Iteration 3** | Added historical patterns agent for known exploits | Caught DAO/Parity/Curve variants | Kept — memory of past exploits catches variants |
 | **Iteration 4** | Added verification agent to cross-check findings | FP dropped from 3.4 to 1.0 (−70%) | Kept — key innovation, resolves multi-agent contradictions |
 | **Removed** | Tried Qwen 2.5 72B for better detection quality | 18+ sec response time, Vercel timeout at 30 sec | Removed — speed/quality tradeoff not worth it for user experience |
+| **Iteration 5** | Added synthesis agent for professional audit report output | JSON converted to executive summary + per-vulnerability deep dive | Kept — output reads like a real security audit |
 | **Removed** | Tried running all 4 agents sequentially for reliability | 40+ sec total, worse UX | Removed — parallel execution is 3x faster with acceptable quality |
 | **Final** | Combined all agents in parallel pipeline with verification | 67% detection, 1.0 FP/test, 71% severity accuracy | Identified main contribution: verification layer that resolves contradictions |
 
