@@ -22,6 +22,12 @@
 
 ---
 
+## What Existed Before This Competition
+
+Before the micro1 Frontier Engineering Challenge, this repository was empty. All code, architecture, test cases, documentation, and deployment were created during the hackathon using the Codebuff (Freebuff Desktop) coding agent. The landing page design was adapted from a provided template. No pre-existing code, libraries, or agent configurations were used.
+
+---
+
 ## The Problem
 
 Security audits catch **60–70%** of smart contract vulnerabilities. The remaining 30–40% slip through — and teams deploy to mainnet with unresolved risks.
@@ -115,8 +121,9 @@ The multi-agent approach trades slightly more time for **dramatically fewer fals
 
 ### Prerequisites
 
-- Node.js 18+
-- Free [Featherless AI](https://featherless.ai) API key
+- Node.js 18+ (tested on v23.11.1)
+- Free [Featherless AI](https://featherless.ai) API key (no credit card required)
+- Model: DeepSeek V4 Flash (free tier, ~4 sec per call)
 
 ### Install
 
@@ -127,17 +134,34 @@ cp .env.example .env
 # Edit .env and add your FEATHERLESS_API_KEY
 ```
 
-### Run Evaluation
+### Run Baseline (Single-Prompt)
+
+```bash
+FEATHERLESS_API_KEY=your_key node src/baseline.js
+```
+Expected: Single LLM call, ~3-5 sec, catches ~79% of vulnerabilities but with 3.4 false positives per test.
+
+### Run Advanced (Multi-Agent)
+
+```bash
+FEATHERLESS_API_KEY=your_key node src/advanced.js
+```
+Expected: 4 parallel agents + verification, ~8-12 sec, catches ~67% with only 1.0 false positives per test.
+
+### Run Full Evaluation (15 Test Cases)
 
 ```bash
 FEATHERLESS_API_KEY=your_key node src/evaluate.js
 ```
+Expected: Runs both baseline and advanced on all 15 test contracts. Saves results to `results/evaluation-report.json`. Total runtime: ~5-10 minutes. Cost: Free.
 
 ### Use the Web Dashboard
 
 1. Visit [auditlens.sithunyein.com/#dashboard](https://auditlens.sithunyein.com/#dashboard)
-2. Paste contract code and audit report
-3. Click **Run Multi-Agent Analysis**
+2. Paste any Solidity contract code
+3. Paste the audit report
+4. Click **Run Multi-Agent Analysis**
+5. Review findings — **a qualified security engineer should verify all findings before making deployment decisions**
 
 ---
 

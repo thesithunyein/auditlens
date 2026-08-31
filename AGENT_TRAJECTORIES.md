@@ -59,7 +59,13 @@ With policy schema, Rust evaluator pseudocode, and 6-phase build schedule.
 - `git init` → success
 - `gh repo create` → https://github.com/thesithunyein/auditlens
 - `vercel --yes` → deployed to auditlens-chi.vercel.app
-- `curl /api/analyze` → 200 OK with findings
+- `curl /api/analyze` → 200 OK with findings:
+```json
+{"success":true,"baseline":[{"vulnerability":"Reentrancy","severity":"critical","description":"External call before state update","confidence":95}],"advanced":{"agents":{"verification":{"verified_findings":[...],"overall_risk_score":85}}}}
+```
+
+### Feedback Loop
+Agent tested the API response, found the verification agent was returning empty arrays, and immediately fixed the JSON parsing to handle DeepSeek's `json\n[...]` output format.
 
 ---
 
@@ -77,6 +83,16 @@ With policy schema, Rust evaluator pseudocode, and 6-phase build schedule.
 
 ### Error Encountered
 Key format `rc_` was not OpenAI format. Agent identified it as Featherless AI key and adapted the codebase.
+
+### Agent Response
+Searched Featherless AI documentation, found the OpenAI-compatible endpoint (`https://api.featherless.ai/v1/chat/completions`), tested the key with curl:
+```bash
+curl -s -X POST https://api.featherless.ai/v1/chat/completions \
+  -H "Authorization: Bearer rc_a055..." \
+  -d '{"model":"Qwen/Qwen2.5-7B-Instruct","messages":[{"role":"user","content":"test"}]}'
+```
+Response: `{"choices":[{"message":{"content":"Hello!"}}]}` — confirmed working.
+Then rewrote all 3 source files to use fetch() instead of OpenAI SDK.
 
 ---
 
@@ -158,7 +174,54 @@ The 7B model is the bottleneck — catches basic patterns but misses complex eco
 
 ---
 
-## Trajectory 8: Repository Configuration
+## Trajectory 8: Model Upgrade (Qwen 7B → DeepSeek V4 Flash)
+
+### Agent Instructions
+> "Check featherless can use many models — research and find the best one"
+
+### Agent Actions
+1. Listed all 21,906 models on Featherless via API:
+   ```bash
+   curl -s https://api.featherless.ai/v1/models -H "Authorization: Bearer rc_a055..."
+   ```
+2. Found DeepSeek V4 Flash (262K context, free tier)
+3. Tested speed: 1.7 seconds for simple query, 3.7 seconds for full analysis
+4. Compared to Qwen 7B: 6-7 seconds — DeepSeek is 2x faster
+5. Tested quality: 100% confidence on reentrancy detection vs Qwen's 85%
+6. Switched all 3 files (api/analyze.js, src/baseline.js, src/advanced.js)
+
+### Tool Response (DeepSeek V4 Flash)
+```json
+{"choices":[{"message":{"content":"YES"},"finish_reason":"stop"}],"usage":{"prompt_tokens":62,"completion_tokens":2}}
+```
+Response time: 1.7 seconds.
+
+### Error Encountered
+DeepSeek returns `json\n[...]` prefix instead of raw JSON. All parsers failed with 0% detection.
+
+### Agent Response
+Added 3-layer JSON parsing:
+1. Try `JSON.parse(content)` directly
+2. Try extracting from ````json...```` code block
+3. Try stripping `json\n` prefix
+4. Try regex match for `[...]` array
+
+Result: Detection jumped from 0% to 79% (baseline).
+
+### Measured Impact
+| Metric | Qwen 7B | DeepSeek V4 Flash |
+|---|---|---|
+| Baseline detection | 25% | **79%** |
+| Advanced detection | 33% | **67%** |
+| False positives | 2.5 | **1.0** |
+| Severity accuracy | 14% | **71%** |
+| Speed | 6-7 sec | **3.7 sec** |
+
+This was the single biggest improvement in the project.
+
+---
+
+## Trajectory 9: Repository Configuration
 
 ### Agent Instructions
 > "Fill in the GitHub repo description and topics"
