@@ -50,40 +50,26 @@ AuditLens fills this gap.
 
 Upload your Solidity contract and the audit report. Five specialized AI agents analyze it — three specialists in parallel, a verification agent that cross-checks everything, and a synthesis agent that produces a professional audit report with executive summary, attack scenarios, and remediation priorities.
 
-```
-Your Contract + Audit Report
-         │
-         ▼
-┌─────────────────────────────────────┐
-│        AgentOrchestrator            │
-│                                     │
-│  ┌──────────┐  ┌──────────────────┐ │
-│  │ Static   │  │ Economic         │ │
-│  │ Analysis │  │ Modeling         │ │
-│  │ Agent    │  │ Agent            │ │
-│  └────┬─────┘  └───────┬──────────┘ │
-│       │                │            │
-│  ┌────┴────────────────┴──────┐     │
-│  │    Historical Patterns     │     │
-│  │         Agent              │     │
-│  └────────────┬───────────────┘     │
-│               ▼                     │
-│  ┌────────────────────────────┐     │
-│  │    Verification Agent      │     │
-│  │  Cross-check · Deduplicate │     │
-│  │  Resolve · Score           │     │
-│  └────────────┬───────────────┘     │
-│               ▼                     │
-│  ┌────────────────────────────┐     │
-│  │    Synthesis Agent         │     │
-│  │  JSON → Professional Report│     │
-│  │  Executive Summary · Fixes │     │
-│  └────────────┬───────────────┘     │
-└───────────────┼─────────────────────┘
-                ▼
-      Professional Audit Report
-  Executive Summary · Findings · Attack Scenarios
-  Remediation Priority · Historical References
+```mermaid
+flowchart TB
+  User[User] --> Upload[Upload Contract + Audit Report]
+  Upload --> API[API Gateway]
+
+  API --> Static[Static Analysis Agent]
+  API --> Economic[Economic Modeling Agent]
+  API --> Historical[Historical Patterns Agent]
+
+  Static --> Verify[Verification Agent]
+  Economic --> Verify
+  Historical --> Verify
+
+  Verify --> Synth[Synthesis Agent]
+  Synth --> Report[Professional Audit Report]
+
+  Report --> Summary[Executive Summary]
+  Report --> Findings[Vulnerability Findings]
+  Report --> Scenarios[Attack Scenarios]
+  Report --> Remediation[Remediation Priority]
 ```
 
 ### Agent Roles
