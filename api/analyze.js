@@ -148,7 +148,7 @@ async function runAdvanced(apiKey, model, contract, auditReport) {
   const synthesisInput = JSON.stringify({
     verified_findings: verified?.verified_findings || [],
     overall_risk_score: verified?.overall_risk_score || 0,
-    contract_summary: contractCode.slice(0, 500)
+    contract_summary: contract.slice(0, 500)
   }, null, 2);
   const synthesis = await runAgent(null, model, SYNTHESIS_PROMPT, synthesisInput);
 
