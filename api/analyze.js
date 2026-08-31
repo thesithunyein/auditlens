@@ -207,20 +207,29 @@ const HISTORICAL_PROMPT = `You are a historical exploit pattern matching agent.
 Cross-reference against: The DAO (2016), Parity (2017), bZx (2020), Harvest (2020), Cream (2021), Mango (2022), Curve (2023), Euler (2023).
 For each match output JSON: { "vulnerability": "name", "historical_exploit": "name and year", "similarity": "what's similar", "risk_level": "high|medium|low", "confidence": 0-100 }`;
 
-const VERIFICATION_PROMPT = `You are a verification agent. PRESERVE all findings while cross-checking quality.
+const VERIFICATION_PROMPT = `You are a verification agent. Your ONLY job is to combine findings from three specialist agents into a single verified list.
 
-Rules:
-1. DO NOT discard or merge findings - keep every unique vulnerability from every agent
-2. If multiple agents found the same issue, combine into ONE finding but note all agents
-3. If agents disagree on severity, pick the HIGHEST severity
-4. Add any NEW vulnerabilities you identify from cross-referencing
-5. Assign overall risk score based on the HIGHEST severity finding
+CRITICAL RULES:
+1. You MUST include EVERY finding from EVERY specialist agent in your output
+2. If two agents found the same thing, keep it as ONE finding and note both agents
+3. If agents disagree on severity, use the HIGHEST severity
+4. NEVER drop a finding. NEVER discard. NEVER skip. The output COUNT must equal or exceed the input COUNT.
+5. Add any additional vulnerabilities YOU notice from cross-referencing
 
-Input: JSON with static_analysis, economic_modeling, historical_patterns.
-Output JSON: {
-  "verified_findings": [{ "vulnerability": "name", "severity": "critical|high|medium|low", "description": "clear description", "evidence": ["agent names"], "confidence": 0-100, "agents_agree": true|false, "impact": "potential damage" }],
-  "contradictions": [],
+The specialist agents are: static_analysis, economic_modeling, historical_patterns.
+
+Output JSON with this EXACT structure:
+{
+  "verified_findings": [
+    {
+      "vulnerability": "name",
+      "severity": "critical|high|medium|low",
+      "description": "description",
+      "evidence": ["static_analysis" or "economic_modeling" or "historical_patterns" or combinations],
+      "confidence": 0-100
+    }
+  ],
   "overall_risk_score": 0-100
 }
 
-IMPORTANT: Include ALL vulnerabilities. Do not reduce the count.`;
+REMINDER: Output at least as many findings as were provided. Count them before submitting.`;

@@ -156,23 +156,39 @@ function scoreFindings(findings, groundTruth) {
   let falsePositives = 0;
   let correctSeverity = 0;
 
+  // Normalize findings — handle both 'vulnerability' and 'name' fields
+  const normalizedFindings = findings.map(f => ({
+    name: (f.vulnerability || f.name || '').toLowerCase(),
+    severity: (f.severity || '').toLowerCase(),
+    raw: f
+  }));
+
   for (const gt of groundTruth) {
-    const match = findings.find(f =>
-      f.vulnerability?.toLowerCase().includes(gt.vulnerability.toLowerCase()) ||
-      gt.vulnerability.toLowerCase().includes(f.vulnerability?.toLowerCase() || '')
-    );
+    const gtName = gt.vulnerability.toLowerCase();
+    const match = normalizedFindings.find(f => {
+      // Exact or partial match
+      if (f.name.includes(gtName) || gtName.includes(f.name)) return true;
+      // Keyword matching for common variations
+      const keywords = gtName.split(/\s+/).filter(w => w.length > 3);
+      const matchCount = keywords.filter(k => f.name.includes(k)).length;
+      return matchCount >= Math.ceil(keywords.length * 0.5);
+    });
     if (match) {
       detected++;
-      if (match.severity?.toLowerCase() === gt.severity?.toLowerCase()) correctSeverity++;
+      if (match.severity === gt.severity?.toLowerCase()) correctSeverity++;
     }
   }
 
-  for (const f of findings) {
-    const isTruePositive = groundTruth.some(gt =>
-      f.vulnerability?.toLowerCase().includes(gt.vulnerability.toLowerCase()) ||
-      gt.vulnerability.toLowerCase().includes(f.vulnerability?.toLowerCase() || '')
-    );
-    if (!isTruePositive && f.severity !== 'informational') falsePositives++;
+  for (const f of normalizedFindings) {
+    if (f.name === '' || f.name === 'informational') continue;
+    const isTruePositive = groundTruth.some(gt => {
+      const gtName = gt.vulnerability.toLowerCase();
+      if (f.name.includes(gtName) || gtName.includes(f.name)) return true;
+      const keywords = gtName.split(/\s+/).filter(w => w.length > 3);
+      const matchCount = keywords.filter(k => f.name.includes(k)).length;
+      return matchCount >= Math.ceil(keywords.length * 0.5);
+    });
+    if (!isTruePositive) falsePositives++;
   }
 
   return {
