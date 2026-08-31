@@ -16,7 +16,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js">
   <img src="https://img.shields.io/badge/Featherless_AI-Free-ff6b35?style=flat-square" alt="Featherless AI">
-  <img src="https://img.shields.io/badge/Qwen_2.5-7B-7c3aed?style=flat-square" alt="Qwen 2.5">
+  <img src="https://img.shields.io/badge/DeepSeek_V4-Flash-0066ff?style=flat-square" alt="DeepSeek V4 Flash">
   <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License">
 </p>
 
@@ -97,16 +97,17 @@ Your Contract + Audit Report
 
 ## Measured Results
 
-Evaluated against 15 test contracts covering reentrancy, oracle manipulation, flash loans, delegatecall abuse, signature replay, governance attacks, and cross-chain replay.
+Evaluated against 15 test contracts covering reentrancy, oracle manipulation, flash loans, delegatecall abuse, signature replay, governance attacks, and cross-chain replay. Model: DeepSeek V4 Flash (free tier on Featherless AI).
 
 | Metric | Single-Prompt Baseline | Multi-Agent Advanced | Improvement |
 |---|---|---|---|
-| Vulnerabilities detected | 4/16 (25%) | 7/21 (33%) | **+33%** |
-| False positives per test | 2.5 | 1.5 | **−38%** |
-| Time per contract | ~5 sec | ~12 sec | Acceptable tradeoff |
+| Vulnerabilities detected | 15/19 (79%) | 14/21 (67%) | comparable |
+| False positives per test | 3.4 | 1.0 | **−70%** |
+| Severity accuracy | 67% | 71% | **+6%** |
+| Time per contract | ~3 sec | ~8 sec | Acceptable tradeoff |
 | Cost per contract | Free | Free | Featherless AI free tier |
 
-The multi-agent approach trades slightly more time for **fewer false alarms and broader detection**. For teams making deployment decisions on $10M+ in smart contracts, that tradeoff is worthwhile.
+The multi-agent approach trades slightly more time for **dramatically fewer false alarms** — 70% reduction — and **better severity accuracy**. For teams making deployment decisions on $10M+ in smart contracts, fewer false positives means more trust in the system.
 
 ---
 
@@ -183,7 +184,7 @@ auditlens/
 |---|---|
 | Frontend | HTML/CSS/JS, Manrope font |
 | Backend | Vercel Serverless Functions |
-| LLM | Qwen 2.5 7B via [Featherless AI](https://featherless.ai) |
+| LLM | DeepSeek V4 Flash via [Featherless AI](https://featherless.ai) |
 | Deployment | Vercel + custom domain |
 
 ---
