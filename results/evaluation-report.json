@@ -1,0 +1,1465 @@
+{
+  "timestamp": "2026-08-31T13:29:33.315Z",
+  "model": "Qwen/Qwen2.5-7B-Instruct (Featherless AI)",
+  "test_cases": 15,
+  "baseline": {
+    "test_cases": 11,
+    "total_ground_truth": 16,
+    "total_detected": 4,
+    "accuracy": 0.25,
+    "avg_false_positives": 2.4545454545454546,
+    "severity_accuracy": 0.25
+  },
+  "advanced": {
+    "test_cases": 15,
+    "total_ground_truth": 21,
+    "total_detected": 7,
+    "accuracy": 0.3333333333333333,
+    "avg_false_positives": 1.5333333333333334,
+    "severity_accuracy": 0.14285714285714285
+  },
+  "detailed_results": {
+    "baseline": [
+      {
+        "test_case": "reentrancy-basic",
+        "findings": [
+          {
+            "vulnerability": "Reentrancy",
+            "severity": "critical",
+            "description": "The `withdraw` function makes an external call before updating the state, which allows for reentrancy attacks. An attacker can call the `withdraw` function again before the balance is decremented, leading to potential loss of funds.",
+            "recommendation": "Ensure that state is updated before making external calls. Use the `nonReentrant` modifier or similar techniques to prevent reentrancy attacks.",
+            "confidence": 100
+          }
+        ],
+        "score": {
+          "detected": 1,
+          "total": 1,
+          "accuracy": 1,
+          "false_positives": 0,
+          "severity_accuracy": 1
+        }
+      },
+      {
+        "test_case": "oracle-manipulation",
+        "findings": [
+          {
+            "vulnerability": "Single Source of Truth",
+            "severity": "high",
+            "description": "The contract relies on a single source for price updates, which can be manipulated by an attacker. This can lead to incorrect price feeds being used, potentially causing significant financial loss.",
+            "recommendation": "Implement a multi-source aggregation mechanism to ensure price updates are verified and validated from multiple sources before being accepted.",
+            "confidence": 95
+          },
+          {
+            "vulnerability": "No Price Bounds",
+            "severity": "high",
+            "description": "The contract does not enforce any minimum or maximum price bounds, allowing an attacker to set extremely high or low prices, which could lead to unexpected behavior in any protocol relying on this oracle.",
+            "recommendation": "Implement price bounds to ensure that prices remain within a reasonable range. For example, you could set a minimum and maximum price that the oracle cannot exceed.",
+            "confidence": 95
+          },
+          {
+            "vulnerability": "Flash Loan Manipulation",
+            "severity": "medium",
+            "description": "The contract does not prevent an attacker from using a flash loan to manipulate the price. An attacker could flash-loan a large amount of tokens, update the price, and then return the tokens, causing the price to be manipulated.",
+            "recommendation": "Implement a mechanism to prevent flash loan attacks, such as requiring a non-zero collateral ratio or using a trusted price aggregator that cannot be manipulated via flash loans.",
+            "confidence": 85
+          },
+          {
+            "vulnerability": "Reverting on Stale Price",
+            "severity": "low",
+            "description": "The `getPriceSafe` function returns 0 instead of reverting when the price is stale. This could lead to unexpected behavior in protocols that rely on this function.",
+            "recommendation": "Revert when the price is stale to ensure that the protocol using this oracle does not proceed with incorrect data.",
+            "confidence": 70
+          }
+        ],
+        "score": {
+          "detected": 0,
+          "total": 1,
+          "accuracy": 0,
+          "false_positives": 4,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "access-control",
+        "findings": [
+          {
+            "vulnerability": "Unrestricted Owner Change",
+            "severity": "high",
+            "description": "The `transferOwnership` function allows any user to change the contract owner, which can lead to unauthorized access and control over the contract's funds and logic.",
+            "recommendation": "Add an `onlyOwner` modifier to restrict this function to the current owner only.",
+            "confidence": 95
+          },
+          {
+            "vulnerability": "Unrestricted Emergency Drain",
+            "severity": "high",
+            "description": "The `emergencyDrain` function allows any user to drain the contract's balance to any address, which can result in the loss of funds and potential misuse of the contract's resources.",
+            "recommendation": "Add an `onlyOwner` modifier to restrict this function to the current owner only.",
+            "confidence": 95
+          },
+          {
+            "vulnerability": "Unrestricted Withdraw All",
+            "severity": "high",
+            "description": "The `withdrawAll` function allows any user to withdraw all the contract's balance, which can result in the loss of funds and potential misuse of the contract's resources.",
+            "recommendation": "Add an `onlyOwner` modifier to restrict this function to the current owner only.",
+            "confidence": 95
+          }
+        ],
+        "score": {
+          "detected": 0,
+          "total": 1,
+          "accuracy": 0,
+          "false_positives": 3,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "flash-loan-vector",
+        "findings": [
+          {
+            "vulnerability": "Flash Loan Manipulation",
+            "severity": "critical",
+            "description": "The `flashLoan` function allows an attacker to manipulate the `getPrice` function by depositing or withdrawing large amounts of Ether, leading to potential price manipulation and flash loan violations.",
+            "recommendation": "Implement a mechanism to prevent flash loan attacks, such as ensuring the price calculation is not influenced by recent deposits or withdrawals. Consider using a more robust price oracle or implementing a delay between price calculations.",
+            "confidence": 95
+          },
+          {
+            "vulnerability": "Reentrancy Vulnerability",
+            "severity": "high",
+            "description": "The `borrow` function is susceptible to reentrancy attacks. An attacker could call the `borrow` function, withdraw funds, and then call the fallback function to drain the contract's balance.",
+            "recommendation": "Use the `revert` statement to prevent reentrancy attacks. Alternatively, use the `Pausable` pattern or a reentrancy guard to ensure the function is not re-entered.",
+            "confidence": 85
+          },
+          {
+            "vulnerability": "Insufficient Liquidity Check",
+            "severity": "medium",
+            "description": "The `flashLoan` function does not check if the contract has sufficient liquidity before executing the flash loan. This could lead to a flash loan violation if the contract's balance is insufficient.",
+            "recommendation": "Ensure the contract has sufficient liquidity before executing a flash loan. Consider implementing a check to ensure the contract's balance is above a certain threshold before allowing a flash loan.",
+            "confidence": 75
+          }
+        ],
+        "score": {
+          "detected": 0,
+          "total": 1,
+          "accuracy": 0,
+          "false_positives": 3,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "front-running",
+        "findings": [
+          {
+            "vulnerability": "Frontrunning Vulnerability",
+            "severity": "critical",
+            "description": "The `swap` function calculates the output amount based on the current reserves, which can be manipulated by frontrunners who observe the transaction and adjust their own reserves to benefit from the price change.",
+            "recommendation": "Implement a commit-reveal scheme where users commit to their swap details and reveal them after a certain period, ensuring that the price is locked in at the time of the commitment.",
+            "confidence": 95
+          },
+          {
+            "vulnerability": "Slippage Risk",
+            "severity": "high",
+            "description": "The `swap` function does not provide any slippage protection, meaning the amount of tokens received can change significantly between the time the transaction is submitted and when it is executed, especially in volatile markets.",
+            "recommendation": "Implement a slippage tolerance parameter that allows users to specify the maximum acceptable deviation from the calculated output amount. If the slippage exceeds this tolerance, the transaction should revert.",
+            "confidence": 90
+          },
+          {
+            "vulnerability": "Insufficient Reserve Check",
+            "severity": "medium",
+            "description": "The `addLiquidity` function allows users to add liquidity without any checks on the total supply or other users' reserves, which could lead to unexpected behavior if the contract is not properly managed.",
+            "recommendation": "Implement additional checks to ensure that the total supply of tokens does not exceed a certain limit or that the reserves do not become negative.",
+            "confidence": 80
+          },
+          {
+            "vulnerability": "View Function Without Proper Access Control",
+            "severity": "low",
+            "description": "The `getTotalReserve` function is a view function but does not have any access control. This could potentially be exploited if the function is used in a way that affects the contract state.",
+            "recommendation": "Ensure that all view functions do not inadvertently affect the contract state. If the function is not meant to modify state, consider renaming it to avoid confusion.",
+            "confidence": 70
+          }
+        ],
+        "score": {
+          "detected": 1,
+          "total": 1,
+          "accuracy": 1,
+          "false_positives": 3,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "donation-attack",
+        "error": "Expected ',' or '}' after property value in JSON at position 637 (line 12 column 86)"
+      },
+      {
+        "test_case": "price-oracle-single",
+        "findings": [
+          {
+            "vulnerability": "Unrestricted Price Setting",
+            "severity": "critical",
+            "description": "Anyone can set the price via the `setPrice` function without any access control. This allows an attacker to manipulate the price and cause significant financial loss.",
+            "recommendation": "Implement access control to restrict the `setPrice` function to only authorized parties, such as a governance contract or a trusted address.",
+            "confidence": 95
+          },
+          {
+            "vulnerability": "Incorrect Aggregation in `getReserves`",
+            "severity": "high",
+            "description": "The `getReserves` function incorrectly aggregates balances by repeatedly adding the same balance multiple times. This will result in an inflated reserve value.",
+            "recommendation": "Remove the loop and directly return the `ethBalance` and `tokenBalance` values for the caller.",
+            "confidence": 90
+          },
+          {
+            "vulnerability": "Potential Overflow in Swap Calculation",
+            "severity": "medium",
+            "description": "The swap calculations involve multiplication and division, which could lead to overflow or underflow if the values are very large or very small.",
+            "recommendation": "Use SafeMath library to prevent overflow and underflow issues. Alternatively, use Solidity 0.8.0's safe arithmetic operations.",
+            "confidence": 85
+          }
+        ],
+        "score": {
+          "detected": 0,
+          "total": 2,
+          "accuracy": 0,
+          "false_positives": 3,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "delegatecall-abuse",
+        "error": "Expected ',' or '}' after property value in JSON at position 749 (line 12 column 103)"
+      },
+      {
+        "test_case": "uninitialized-storage",
+        "error": "Expected ',' or '}' after property value in JSON at position 709 (line 12 column 119)"
+      },
+      {
+        "test_case": "selfdestruct-abuse",
+        "findings": [
+          {
+            "vulnerability": "Force-Send Manipulation",
+            "severity": "high",
+            "description": "The contract uses `this.balance` to determine the prize amount, which can be manipulated by force-sending ETH to the contract. An attacker can send ETH to the contract, causing the `this.balance` to increase, and then claim a larger prize than intended.",
+            "recommendation": "Use a fixed prize amount or a more secure method to calculate the prize, such as a predefined value or a function that cannot be manipulated by external actors.",
+            "confidence": 95
+          }
+        ],
+        "score": {
+          "detected": 0,
+          "total": 2,
+          "accuracy": 0,
+          "false_positives": 1,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "signature-replay",
+        "error": "Expected ',' or '}' after property value in JSON at position 664 (line 12 column 54)"
+      },
+      {
+        "test_case": "governance-flash-vote",
+        "findings": [
+          {
+            "vulnerability": "Flash Loan Voting Manipulation",
+            "severity": "critical",
+            "description": "The contract allows attackers to manipulate voting by using flash loans to temporarily increase their voting power. This can lead to unfair voting outcomes.",
+            "recommendation": "Implement a snapshot mechanism to record the voter's balance at the time of voting. This ensures that the voting power is based on the balance at the time of the vote, not the balance at the time of the transaction.",
+            "confidence": 95
+          },
+          {
+            "vulnerability": "Reentrancy Vulnerability",
+            "severity": "high",
+            "description": "The `executeProposal` function does not check for reentrancy. An attacker could potentially exploit this to drain funds from the contract or execute the proposal multiple times.",
+            "recommendation": "Use the `Pausable` or `ReentrancyGuard` patterns to prevent reentrancy attacks. Alternatively, implement a reentrancy guard manually by adding a boolean flag to track whether the function is currently executing.",
+            "confidence": 90
+          },
+          {
+            "vulnerability": "Insufficient Checks on `executeProposal`",
+            "severity": "medium",
+            "description": "The `executeProposal` function does not check if the target contract is a known malicious contract or if it has any malicious code that could be exploited.",
+            "recommendation": "Implement checks to ensure that the target contract is a valid and trusted contract. Consider using a whitelist or a more secure method to determine the target contract's legitimacy.",
+            "confidence": 85
+          }
+        ],
+        "score": {
+          "detected": 0,
+          "total": 2,
+          "accuracy": 0,
+          "false_positives": 3,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "batch-call-reentrancy",
+        "findings": [
+          {
+            "vulnerability": "Cross-Function Reentrancy",
+            "severity": "high",
+            "description": "The `liquidate` function is vulnerable to cross-function reentrancy. An attacker can exploit the reentrancy to manipulate the state before the function completes, leading to incorrect collateral and debt calculations.",
+            "recommendation": "Implement a reentrancy guard to prevent reentrancy attacks. Alternatively, use the `nonReentrant` modifier from OpenZeppelin's ReentrancyGuard contract.",
+            "confidence": 95
+          },
+          {
+            "vulnerability": "Reentrancy in `borrow` Function",
+            "severity": "high",
+            "description": "The `borrow` function is vulnerable to reentrancy. An attacker can re-enter the `borrow` function before the state is updated, leading to incorrect collateral and debt calculations.",
+            "recommendation": "Implement a reentrancy guard to prevent reentrancy attacks. Alternatively, use the `nonReentrant` modifier from OpenZeppelin's ReentrancyGuard contract.",
+            "confidence": 95
+          },
+          {
+            "vulnerability": "Unchecked External Calls",
+            "severity": "medium",
+            "description": "The `borrow` and `liquidate` functions use `call` to send Ether without checking the return value. If the recipient contract fails, the transaction will revert, potentially leaving the contract in an inconsistent state.",
+            "recommendation": "Use `transfer` or `send` instead of `call` to ensure that the transaction fails if the recipient contract does not accept the Ether. Alternatively, check the return value of `call` and handle failures appropriately.",
+            "confidence": 85
+          }
+        ],
+        "score": {
+          "detected": 1,
+          "total": 1,
+          "accuracy": 1,
+          "false_positives": 2,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "timelock-bypass",
+        "findings": [
+          {
+            "vulnerability": "Reentrancy Vulnerability",
+            "severity": "high",
+            "description": "The `executeTransaction` function is vulnerable to reentrancy attacks because it lacks a reentrancy guard. An attacker can queue a transaction and then call `executeTransaction` in a nested call, re-entering the function before the state is updated.",
+            "recommendation": "Add a reentrancy guard to prevent reentrancy attacks. Use a modifier or a state variable to track if the function is currently executing.",
+            "confidence": 95
+          },
+          {
+            "vulnerability": "Lack of Timelock on Admin Change",
+            "severity": "high",
+            "description": "The `changeAdmin` function can be called directly without going through the timelock, bypassing the delay mechanism. This allows the admin to change the admin role immediately, which can be exploited if the current admin is compromised.",
+            "recommendation": "Add a timelock to the `changeAdmin` function. Queue the admin change and require it to be executed after a certain delay.",
+            "confidence": 95
+          }
+        ],
+        "score": {
+          "detected": 0,
+          "total": 2,
+          "accuracy": 0,
+          "false_positives": 2,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "cross-chain-replay",
+        "findings": [
+          {
+            "vulnerability": "Missing Chain ID in Signature",
+            "severity": "critical",
+            "description": "The `claimBridge` function does not include the `sourceChain` in the signed hash, allowing signatures from one chain to be valid on another chain.",
+            "recommendation": "Include the `sourceChain` in the signed hash to ensure the signature is valid only for the intended chain.",
+            "confidence": 95
+          },
+          {
+            "vulnerability": "Replay Attacks",
+            "severity": "high",
+            "description": "The `claimBridge` function does not include a nonce, making it susceptible to replay attacks where the same message can be processed multiple times.",
+            "recommendation": "Add a unique nonce to the `BridgeMessage` struct and include it in the signed hash to prevent replay attacks.",
+            "confidence": 90
+          },
+          {
+            "vulnerability": "Signature Verification Missing",
+            "severity": "high",
+            "description": "The `claimBridge` function does not verify the signature before processing the message, allowing anyone to call this function with any message.",
+            "recommendation": "Implement ECDSA signature verification to ensure the signature is valid before processing the message.",
+            "confidence": 95
+          },
+          {
+            "vulnerability": "Insufficient Error Handling",
+            "severity": "medium",
+            "description": "The `claimBridge` function does not handle errors from the `call` operation, which could lead to unexpected behavior if the `to` address does not handle the incoming Ether correctly.",
+            "recommendation": "Add error handling to the `call` operation to ensure the transaction is reverted if the `to` address fails to execute the call.",
+            "confidence": 85
+          }
+        ],
+        "score": {
+          "detected": 1,
+          "total": 2,
+          "accuracy": 0.5,
+          "false_positives": 3,
+          "severity_accuracy": 0
+        }
+      }
+    ],
+    "advanced": [
+      {
+        "test_case": "reentrancy-basic",
+        "findings": {
+          "agents": {
+            "static_analysis": {
+              "vulnerability": "Reentrancy",
+              "severity": "critical",
+              "line_range": "36-42",
+              "pattern": "External call before state update",
+              "precondition": "The contract has a withdraw function that makes an external call before decrementing the balance.",
+              "confidence": 100
+            },
+            "economic_modeling": {
+              "vulnerability": "Reentrancy",
+              "attack_type": "mev",
+              "scenario": "1. An attacker deploys a malicious contract that calls the `withdraw` function of the `VulnerableVault` contract. 2. The `withdraw` function sends the requested amount to the attacker's address. 3. Before the state is updated, the attacker's contract calls `withdraw` again, exploiting the reentrancy vulnerability. 4. The attacker drains the contract's balance. 5. The state is finally updated, but the contract is empty.",
+              "impact": "100 ETH (assuming the contract has 100 ETH in it)",
+              "confidence": 85
+            },
+            "historical_patterns": {
+              "vulnerability": "Reentrancy",
+              "historical_exploit": "The DAO (2016)",
+              "similarity": "The withdraw function makes an external call before updating the state, which is a common pattern in reentrancy attacks.",
+              "risk_level": "high",
+              "confidence": 85
+            },
+            "verification": {
+              "verified_findings": [
+                {
+                  "vulnerability": "Reentrancy",
+                  "severity": "critical",
+                  "description": "The contract has a withdraw function that makes an external call before decrementing the balance, which can be exploited by an attacker to drain the contract's funds.",
+                  "evidence": [
+                    "static_analysis",
+                    "economic_modeling",
+                    "historical_patterns"
+                  ],
+                  "confidence": 100,
+                  "agents_agree": true
+                }
+              ],
+              "contradictions": [],
+              "overall_risk_score": 100
+            }
+          },
+          "metadata": {
+            "total_time_ms": 20645,
+            "agents_used": 4,
+            "model": "Qwen/Qwen2.5-7B-Instruct"
+          }
+        },
+        "score": {
+          "detected": 1,
+          "total": 1,
+          "accuracy": 1,
+          "false_positives": 0,
+          "severity_accuracy": 1
+        }
+      },
+      {
+        "test_case": "oracle-manipulation",
+        "findings": {
+          "agents": {
+            "static_analysis": [
+              {
+                "vulnerability": "Timestamp Dependence",
+                "severity": "high",
+                "line_range": "18-23",
+                "pattern": "Price update and retrieval depend on block.timestamp",
+                "precondition": "An attacker can manipulate the price by controlling the timestamp",
+                "confidence": 85
+              },
+              {
+                "vulnerability": "No Minimum/Maximum Price Bounds",
+                "severity": "high",
+                "line_range": "32-37",
+                "pattern": "No checks on price values",
+                "precondition": "An attacker can set extremely high or low prices",
+                "confidence": 90
+              }
+            ],
+            "economic_modeling": {
+              "vulnerability": "Oracle Manipulation",
+              "attack_type": "oracle",
+              "scenario": "1. An attacker identifies a protocol that relies on the PriceOracle contract for price feeds. 2. The attacker performs a flash loan to manipulate the price of a token by setting a high or low price through the `updatePrice` function. 3. The attacker then exploits the manipulated price in the protocol, potentially leading to significant financial loss. 4. The attacker returns the flash loan and reverts the price back to normal.",
+              "impact": "Estimated loss: High. The attacker can manipulate the price to their advantage, leading to potential losses in the protocol that relies on the oracle.",
+              "confidence": 85
+            },
+            "historical_patterns": {
+              "vulnerability": "Single Source of Truth",
+              "historical_exploit": "The DAO (2016)",
+              "similarity": "Both involve a single source of price data that can be manipulated, leading to potential loss of funds.",
+              "risk_level": "high",
+              "confidence": 85
+            },
+            "verification": {
+              "verified_findings": [
+                {
+                  "vulnerability": "Timestamp Dependence",
+                  "severity": "high",
+                  "description": "Price update and retrieval depend on block.timestamp, which can be manipulated by an attacker to control the price.",
+                  "evidence": [
+                    "static_analysis"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": true
+                },
+                {
+                  "vulnerability": "No Minimum/Maximum Price Bounds",
+                  "severity": "high",
+                  "description": "No checks on price values, allowing an attacker to set extremely high or low prices.",
+                  "evidence": [
+                    "static_analysis"
+                  ],
+                  "confidence": 90,
+                  "agents_agree": true
+                },
+                {
+                  "vulnerability": "Oracle Manipulation",
+                  "severity": "high",
+                  "description": "An attacker can perform a flash loan to manipulate the price of a token through the `updatePrice` function, leading to potential financial loss.",
+                  "evidence": [
+                    "economic_modeling"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": true
+                },
+                {
+                  "vulnerability": "Single Source of Truth",
+                  "severity": "high",
+                  "description": "The protocol relies on a single source of price data, which can be manipulated, similar to the historical exploit of The DAO.",
+                  "evidence": [
+                    "historical_patterns"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": true
+                }
+              ],
+              "contradictions": [],
+              "overall_risk_score": 85
+            }
+          },
+          "metadata": {
+            "total_time_ms": 34598,
+            "agents_used": 4,
+            "model": "Qwen/Qwen2.5-7B-Instruct"
+          }
+        },
+        "score": {
+          "detected": 1,
+          "total": 1,
+          "accuracy": 1,
+          "false_positives": 3,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "access-control",
+        "findings": {
+          "agents": {
+            "static_analysis": [
+              {
+                "vulnerability": "Access Control Gap",
+                "severity": "high",
+                "line_range": "18-21",
+                "pattern": "withdrawAll function is external and can be called by anyone",
+                "precondition": "Anyone can call this function",
+                "confidence": 95
+              },
+              {
+                "vulnerability": "Access Control Gap",
+                "severity": "high",
+                "line_range": "24-27",
+                "pattern": "transferOwnership function is external and can be called by anyone",
+                "precondition": "Anyone can call this function to change the owner",
+                "confidence": 95
+              },
+              {
+                "vulnerability": "Access Control Gap",
+                "severity": "high",
+                "line_range": "30-33",
+                "pattern": "emergencyDrain function is external and can be called by anyone",
+                "precondition": "Anyone can call this function to drain the contract balance to any address",
+                "confidence": 95
+              }
+            ],
+            "economic_modeling": {
+              "vulnerability": "Unrestricted Ownership Transfer",
+              "attack_type": "governance",
+              "scenario": "1. An attacker calls the `transferOwnership` function to take control of the contract.\n2. The attacker then calls the `emergencyDrain` function to drain the contract's balance to their own address.",
+              "impact": "Full contract balance",
+              "confidence": 85
+            },
+            "historical_patterns": {
+              "vulnerability": "Unrestricted Function Access",
+              "historical_exploit": "The DAO (2016)",
+              "similarity": "Both involve functions that can be called by anyone, leading to potential fund draining.",
+              "risk_level": "high",
+              "confidence": 85
+            },
+            "verification": {
+              "verified_findings": [
+                {
+                  "vulnerability": "Access Control Gap",
+                  "severity": "high",
+                  "description": "The `withdrawAll`, `transferOwnership`, and `emergencyDrain` functions are external and can be called by anyone, leading to potential unauthorized access and control.",
+                  "evidence": [
+                    "static_analysis"
+                  ],
+                  "confidence": 95,
+                  "agents_agree": true
+                },
+                {
+                  "vulnerability": "Unrestricted Ownership Transfer",
+                  "severity": "high",
+                  "description": "The `transferOwnership` function allows an attacker to take control of the contract, and subsequently, the `emergencyDrain` function can be used to drain the contract's balance to the attacker's address.",
+                  "evidence": [
+                    "static_analysis",
+                    "economic_modeling"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": true
+                },
+                {
+                  "vulnerability": "Unrestricted Function Access",
+                  "severity": "high",
+                  "description": "Historical patterns show that unrestricted access to functions can lead to significant financial losses, similar to the DAO incident in 2016.",
+                  "evidence": [
+                    "historical_patterns"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": true
+                }
+              ],
+              "contradictions": [],
+              "overall_risk_score": 85
+            }
+          },
+          "metadata": {
+            "total_time_ms": 15880,
+            "agents_used": 4,
+            "model": "Qwen/Qwen2.5-7B-Instruct"
+          }
+        },
+        "score": {
+          "detected": 0,
+          "total": 1,
+          "accuracy": 0,
+          "false_positives": 3,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "flash-loan-vector",
+        "findings": {
+          "agents": {
+            "static_analysis": {
+              "vulnerability": "Flash Loan Manipulation",
+              "severity": "high",
+              "line_range": "60-75",
+              "pattern": "Price calculation can be manipulated via flash loan",
+              "precondition": "Flash loan receiver can manipulate the pool's reserves",
+              "confidence": 95
+            },
+            "economic_modeling": {
+              "vulnerability": "Flash Loan Manipulation",
+              "attack_type": "flash_loan",
+              "scenario": "1. An attacker deploys a flash loan to the LendingPool contract.\n2. The attacker deposits a large amount of funds into the contract to manipulate the price calculation.\n3. The attacker withdraws the flash loan and triggers the borrow function, which uses the manipulated price to calculate collateral.\n4. The attacker borrows an amount that would normally be impossible due to the manipulated price and withdraws the funds.",
+              "impact": "The attacker can borrow funds without providing sufficient collateral, leading to potential losses for the contract and other users.",
+              "confidence": 85
+            },
+            "historical_patterns": {
+              "vulnerability": "Flash Loan Manipulation",
+              "historical_exploit": "bZx (2020)",
+              "similarity": "Both involve manipulating the price calculation within a single transaction using a flash loan.",
+              "risk_level": "high",
+              "confidence": 85
+            },
+            "verification": {
+              "verified_findings": [
+                {
+                  "vulnerability": "Flash Loan Manipulation",
+                  "severity": "high",
+                  "description": "The contract allows for flash loan manipulation, which can lead to price calculation manipulation and unauthorized borrowing without sufficient collateral.",
+                  "evidence": [
+                    "static_analysis",
+                    "economic_modeling",
+                    "historical_patterns"
+                  ],
+                  "confidence": 95,
+                  "agents_agree": true
+                }
+              ],
+              "contradictions": [],
+              "overall_risk_score": 95
+            }
+          },
+          "metadata": {
+            "total_time_ms": 14710,
+            "agents_used": 4,
+            "model": "Qwen/Qwen2.5-7B-Instruct"
+          }
+        },
+        "score": {
+          "detected": 0,
+          "total": 1,
+          "accuracy": 0,
+          "false_positives": 1,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "front-running",
+        "findings": {
+          "agents": {
+            "static_analysis": {
+              "vulnerability": "Front-running vulnerability",
+              "severity": "high",
+              "line_range": "42-53",
+              "pattern": "Visible pending swaps in mempool",
+              "precondition": "An attacker can observe the swap transaction before it is executed and submit a larger swap transaction to manipulate the price.",
+              "confidence": 85
+            },
+            "economic_modeling": {
+              "vulnerability": "Frontrunning",
+              "attack_type": "composability",
+              "scenario": "1. An attacker observes a user submitting a swap transaction.\n2. The attacker calculates the expected output amount based on the current reserves.\n3. The attacker submits a larger swap transaction with the same token pair, effectively frontrunning the original user.\n4. When the original user's transaction is executed, the price has already moved due to the attacker's larger transaction, resulting in a lower output amount.",
+              "impact": "The original user receives less output tokens than expected, potentially leading to significant financial loss.",
+              "confidence": 85
+            },
+            "historical_patterns": {
+              "vulnerability": "Frontrunning",
+              "historical_exploit": "The DAO (2016)",
+              "similarity": "The vulnerability involves the visibility of pending transactions in the mempool, allowing attackers to observe and manipulate the outcome of transactions.",
+              "risk_level": "high",
+              "confidence": 85
+            },
+            "verification": {
+              "verified_findings": [
+                {
+                  "vulnerability": "Front-running vulnerability",
+                  "severity": "high",
+                  "description": "An attacker can observe the swap transaction before it is executed and submit a larger swap transaction to manipulate the price, resulting in the original user receiving less output tokens than expected.",
+                  "evidence": [
+                    "static_analysis",
+                    "economic_modeling",
+                    "historical_patterns"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": true
+                }
+              ],
+              "contradictions": [],
+              "overall_risk_score": 85
+            }
+          },
+          "metadata": {
+            "total_time_ms": 12471,
+            "agents_used": 4,
+            "model": "Qwen/Qwen2.5-7B-Instruct"
+          }
+        },
+        "score": {
+          "detected": 0,
+          "total": 1,
+          "accuracy": 0,
+          "false_positives": 1,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "donation-attack",
+        "findings": {
+          "agents": {
+            "static_analysis": {
+              "vulnerability": "Donation Attack",
+              "severity": "high",
+              "line_range": "31-37",
+              "pattern": "Using totalDeposits for share calculation without validation",
+              "precondition": "Attacker can donate directly to inflate totalDeposits",
+              "confidence": 95
+            },
+            "economic_modeling": {
+              "vulnerability": "Donation Attack",
+              "attack_type": "governance",
+              "scenario": "1. Attacker deposits a large amount of ETH into the contract.\n2. Attacker calls `getBalance` to inflate their share calculation.\n3. Attacker calls `borrow` to withdraw a large amount of ETH, exploiting the lack of validation on the inflated share calculation.",
+              "impact": "Attacker can withdraw more ETH than they deposited, potentially leading to significant losses.",
+              "confidence": 85
+            },
+            "historical_patterns": {
+              "vulnerability": "Donation Attack",
+              "historical_exploit": "Euler (2023)",
+              "similarity": "The contract allows direct donations that can inflate the totalDeposits, leading to inflated share calculations.",
+              "risk_level": "high",
+              "confidence": 85
+            },
+            "verification": {
+              "verified_findings": [
+                {
+                  "vulnerability": "Donation Attack",
+                  "severity": "high",
+                  "description": "The contract allows direct donations that can inflate the totalDeposits, leading to inflated share calculations. This can be exploited by an attacker to withdraw more ETH than they deposited, potentially leading to significant losses.",
+                  "evidence": [
+                    "static_analysis",
+                    "economic_modeling",
+                    "historical_patterns"
+                  ],
+                  "confidence": 95,
+                  "agents_agree": true
+                }
+              ],
+              "contradictions": [],
+              "overall_risk_score": 95
+            }
+          },
+          "metadata": {
+            "total_time_ms": 10703,
+            "agents_used": 4,
+            "model": "Qwen/Qwen2.5-7B-Instruct"
+          }
+        },
+        "score": {
+          "detected": 1,
+          "total": 2,
+          "accuracy": 0.5,
+          "false_positives": 0,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "price-oracle-single",
+        "findings": {
+          "agents": {
+            "static_analysis": [
+              {
+                "vulnerability": "Access control gap",
+                "severity": "high",
+                "line_range": "18-20",
+                "pattern": "Anyone can set the price",
+                "precondition": "No access control modifier",
+                "confidence": 95
+              },
+              {
+                "vulnerability": "Incorrect aggregation",
+                "severity": "medium",
+                "line_range": "59-62",
+                "pattern": "Incorrectly aggregating balances",
+                "precondition": "Loop with incorrect balance retrieval",
+                "confidence": 85
+              }
+            ],
+            "economic_modeling": {
+              "vulnerability": "Oracle Manipulation",
+              "attack_type": "oracle",
+              "scenario": "1. An attacker calls the `setPrice` function to set a manipulated price.\n2. The attacker then performs a series of swaps using the manipulated price to extract liquidity from the pool.\n3. The attacker can then revert the price back to normal or set it to a different manipulated value to further exploit the pool.",
+              "impact": "The attacker can potentially extract a significant amount of value from the pool by manipulating the price and performing swaps.",
+              "confidence": 85
+            },
+            "historical_patterns": {
+              "vulnerability": "Price Manipulation",
+              "historical_exploit": "The DAO (2016)",
+              "similarity": "Anyone can set the price without any access control, similar to The DAO where funds were drained due to a lack of proper access controls.",
+              "risk_level": "high",
+              "confidence": 85
+            },
+            "verification": {
+              "verified_findings": [
+                {
+                  "vulnerability": "Access control gap",
+                  "severity": "high",
+                  "description": "Anyone can set the price without any access control modifier, which allows for potential manipulation of the price.",
+                  "evidence": [
+                    "static_analysis"
+                  ],
+                  "confidence": 95,
+                  "agents_agree": true
+                },
+                {
+                  "vulnerability": "Incorrect aggregation",
+                  "severity": "medium",
+                  "description": "Incorrectly aggregating balances due to a loop with incorrect balance retrieval.",
+                  "evidence": [
+                    "static_analysis"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": true
+                },
+                {
+                  "vulnerability": "Oracle Manipulation",
+                  "severity": "high",
+                  "description": "An attacker can manipulate the oracle to set a manipulated price, perform swaps to extract liquidity, and then revert the price to exploit the pool.",
+                  "evidence": [
+                    "economic_modeling"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": true
+                },
+                {
+                  "vulnerability": "Price Manipulation",
+                  "severity": "high",
+                  "description": "The ability to set the price without any access control, similar to the historical exploit of The DAO where funds were drained due to a lack of proper access controls.",
+                  "evidence": [
+                    "historical_patterns"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": true
+                }
+              ],
+              "contradictions": [],
+              "overall_risk_score": 85
+            }
+          },
+          "metadata": {
+            "total_time_ms": 22807,
+            "agents_used": 4,
+            "model": "Qwen/Qwen2.5-7B-Instruct"
+          }
+        },
+        "score": {
+          "detected": 1,
+          "total": 2,
+          "accuracy": 0.5,
+          "false_positives": 3,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "delegatecall-abuse",
+        "findings": {
+          "agents": {
+            "static_analysis": {
+              "vulnerability": "Reentrancy",
+              "severity": "high",
+              "line_range": "42-47",
+              "pattern": "External call before state update",
+              "precondition": "The `withdraw` function is called by an attacker who can make multiple calls to `withdraw` before the state is updated.",
+              "confidence": 85
+            },
+            "economic_modeling": {
+              "vulnerability": "Delegatecall to User-Supplied Address",
+              "attack_type": "composability",
+              "scenario": "1. An attacker deploys a malicious contract with a function that overwrites the `balances` mapping in the `ProxyVault` contract.\n2. The attacker calls the `execute` function with the address of the malicious contract and the data containing the overwrite function.\n3. The `ProxyVault` contract's `balances` mapping is modified, allowing the attacker to withdraw funds without having deposited them.\n4. The attacker then calls the `withdraw` function to steal the funds.",
+              "impact": "100",
+              "confidence": 95
+            },
+            "historical_patterns": {
+              "vulnerability": "Delegatecall to User-Supplied Address",
+              "historical_exploit": "Parity (2017)",
+              "similarity": "The contract allows execution of code via `delegatecall` to an address provided by the user, which can be exploited to overwrite storage.",
+              "risk_level": "high",
+              "confidence": 85
+            },
+            "verification": {
+              "verified_findings": [
+                {
+                  "vulnerability": "Delegatecall to User-Supplied Address",
+                  "severity": "critical",
+                  "description": "The contract allows execution of code via `delegatecall` to an address provided by the user, which can be exploited to overwrite storage. This can lead to unauthorized access and theft of funds.",
+                  "evidence": [
+                    "static_analysis",
+                    "economic_modeling",
+                    "historical_patterns"
+                  ],
+                  "confidence": 95,
+                  "agents_agree": true
+                },
+                {
+                  "vulnerability": "Reentrancy",
+                  "severity": "high",
+                  "description": "The `withdraw` function is called by an attacker who can make multiple calls to `withdraw` before the state is updated, leading to a reentrancy attack.",
+                  "evidence": [
+                    "static_analysis"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": true
+                }
+              ],
+              "contradictions": [],
+              "overall_risk_score": 95
+            }
+          },
+          "metadata": {
+            "total_time_ms": 12547,
+            "agents_used": 4,
+            "model": "Qwen/Qwen2.5-7B-Instruct"
+          }
+        },
+        "score": {
+          "detected": 0,
+          "total": 1,
+          "accuracy": 0,
+          "false_positives": 2,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "uninitialized-storage",
+        "findings": {
+          "agents": {
+            "static_analysis": {
+              "vulnerability": "Uninitialized Storage Pointer",
+              "severity": "high",
+              "line_range": "42-47",
+              "pattern": "Uninitialized storage pointer assignment",
+              "precondition": "msg.sender must be the owner",
+              "confidence": 95
+            },
+            "economic_modeling": {
+              "vulnerability": "Uninitialized Storage Pointer",
+              "attack_type": "governance",
+              "scenario": "1. An attacker gains access to the `migrateTo` function by becoming the owner or exploiting another vulnerability.\n2. The attacker calls the `migrateTo` function with a contract address that is not the intended new owner.\n3. The `migrateTo` function initializes `tempOwner` with the new contract address but does not properly set the `owner` storage slot.\n4. The loop in the `migrateTo` function transfers 1 ether at a time to the `tempOwner` (which is the attacker's contract), draining all funds from the `TokenVault` contract.",
+              "impact": "Estimated loss: All funds in the TokenVault contract (totalDeposits)",
+              "confidence": 85
+            },
+            "historical_patterns": {
+              "vulnerability": "Uninitialized Storage Pointer",
+              "historical_exploit": "Parity (2017)",
+              "similarity": "The contract uses an uninitialized storage pointer to overwrite the owner's address, similar to how the Parity multisig wallet was exploited.",
+              "risk_level": "high",
+              "confidence": 85
+            },
+            "verification": {
+              "verified_findings": [
+                {
+                  "vulnerability": "Uninitialized Storage Pointer",
+                  "severity": "high",
+                  "description": "The contract uses an uninitialized storage pointer to overwrite the owner's address, which can lead to unauthorized access and potential fund draining.",
+                  "evidence": [
+                    "static_analysis",
+                    "economic_modeling",
+                    "historical_patterns"
+                  ],
+                  "confidence": 95,
+                  "agents_agree": true
+                }
+              ],
+              "contradictions": [],
+              "overall_risk_score": 95
+            }
+          },
+          "metadata": {
+            "total_time_ms": 8241,
+            "agents_used": 4,
+            "model": "Qwen/Qwen2.5-7B-Instruct"
+          }
+        },
+        "score": {
+          "detected": 1,
+          "total": 1,
+          "accuracy": 1,
+          "false_positives": 0,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "selfdestruct-abuse",
+        "findings": {
+          "agents": {
+            "static_analysis": {
+              "vulnerability": "Force-Send Vulnerability",
+              "severity": "high",
+              "line_range": "19-27",
+              "pattern": "Use of this.balance in claimPrize function",
+              "precondition": "Attacker can force-send ETH to the contract",
+              "confidence": 95
+            },
+            "economic_modeling": {
+              "vulnerability": "Force-Send Manipulation",
+              "attack_type": "composability",
+              "scenario": "1. Attacker deploys a malicious contract that uses selfdestruct to force-send ETH to the BalanceGame contract.\n2. Attacker calls the `claimPrize` function to claim a prize that is inflated by the force-sent ETH.\n3. The attacker receives more prize money than they should.",
+              "impact": "Attacker gains an unfair advantage by receiving more prize money.",
+              "confidence": 85
+            },
+            "historical_patterns": {
+              "vulnerability": "Force-Send Manipulation",
+              "historical_exploit": "The DAO (2016)",
+              "similarity": "The contract uses `this.balance` which can be manipulated via `selfdestruct` or `send`/`call` to inflate the prize pool. This is similar to how The DAO was exploited by inflating the contract's balance.",
+              "risk_level": "high",
+              "confidence": 85
+            },
+            "verification": {
+              "verified_findings": [
+                {
+                  "vulnerability": "Force-Send Vulnerability",
+                  "severity": "high",
+                  "description": "The contract uses `this.balance` in the `claimPrize` function, which can be manipulated via `selfdestruct` or `send`/`call` to inflate the prize pool. This allows an attacker to force-send ETH to the contract and claim a larger prize than intended.",
+                  "evidence": [
+                    "static_analysis",
+                    "economic_modeling",
+                    "historical_patterns"
+                  ],
+                  "confidence": 95,
+                  "agents_agree": true
+                }
+              ],
+              "contradictions": [],
+              "overall_risk_score": 95
+            }
+          },
+          "metadata": {
+            "total_time_ms": 8006,
+            "agents_used": 4,
+            "model": "Qwen/Qwen2.5-7B-Instruct"
+          }
+        },
+        "score": {
+          "detected": 0,
+          "total": 2,
+          "accuracy": 0,
+          "false_positives": 1,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "signature-replay",
+        "findings": {
+          "agents": {
+            "static_analysis": {
+              "vulnerability": "Replay Attack",
+              "severity": "high",
+              "line_range": "45-52",
+              "pattern": "No nonce in hash and no nonce increment",
+              "precondition": "The same signature can be used multiple times",
+              "confidence": 85
+            },
+            "economic_modeling": {
+              "vulnerability": "Nonce Replay Attack",
+              "attack_type": "composability",
+              "scenario": "1. An attacker obtains a valid signature from the relayer. 2. The attacker repeatedly calls the `executeTransfer` function with the same signature to drain funds from the `from` address. 3. Since the nonce is not incremented and signatures are not unique per transaction, the same signature can be used multiple times.",
+              "impact": "The attacker can drain all funds from the `from` address.",
+              "confidence": 85
+            },
+            "historical_patterns": {
+              "vulnerability": "Replay Attack",
+              "historical_exploit": "The DAO (2016)",
+              "similarity": "The contract allows for off-chain signed transfers without nonce protection, which can be replayed by an attacker to drain funds.",
+              "risk_level": "high",
+              "confidence": 85
+            },
+            "verification": {
+              "verified_findings": [
+                {
+                  "vulnerability": "Replay Attack",
+                  "severity": "high",
+                  "description": "The contract allows for off-chain signed transfers without nonce protection, which can be replayed by an attacker to drain funds. The same signature can be used multiple times due to the lack of nonce increment.",
+                  "evidence": [
+                    "static_analysis",
+                    "economic_modeling",
+                    "historical_patterns"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": true
+                }
+              ],
+              "contradictions": [],
+              "overall_risk_score": 85
+            }
+          },
+          "metadata": {
+            "total_time_ms": 7283,
+            "agents_used": 4,
+            "model": "Qwen/Qwen2.5-7B-Instruct"
+          }
+        },
+        "score": {
+          "detected": 0,
+          "total": 1,
+          "accuracy": 0,
+          "false_positives": 1,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "governance-flash-vote",
+        "findings": {
+          "agents": {
+            "static_analysis": {
+              "vulnerability": "Front-running vulnerability",
+              "severity": "high",
+              "line_range": "42-49",
+              "pattern": "Voting power is based on current balance, allowing flash loans to manipulate votes",
+              "precondition": "Attacker has access to flash loan capabilities",
+              "confidence": 95
+            },
+            "economic_modeling": {
+              "vulnerability": "Flash Loan Vote Manipulation",
+              "attack_type": "flash_loan",
+              "scenario": "1. Attacker borrows a large amount of tokens via a flash loan. 2. Attacker uses the borrowed tokens to vote in favor of a proposal. 3. Attacker returns the borrowed tokens to the flash loan contract. 4. The proposal passes due to the massive voting power from the flash loan.",
+              "impact": "The proposal can be manipulated to pass with a large majority, even if the actual support is low.",
+              "confidence": 85
+            },
+            "historical_patterns": {
+              "vulnerability": "Flash Loan Voting Manipulation",
+              "historical_exploit": "The DAO (2016)",
+              "similarity": "The vulnerability allows an attacker to manipulate voting by temporarily increasing their voting power through a flash loan, similar to how The DAO was exploited.",
+              "risk_level": "high",
+              "confidence": 85
+            },
+            "verification": {
+              "verified_findings": [
+                {
+                  "vulnerability": "Front-running vulnerability",
+                  "severity": "high",
+                  "description": "Voting power is based on current balance, allowing flash loans to manipulate votes. This is evidenced by the line range 42-49 where the voting power calculation is performed.",
+                  "evidence": [
+                    "static_analysis"
+                  ],
+                  "confidence": 95,
+                  "agents_agree": true
+                },
+                {
+                  "vulnerability": "Flash Loan Vote Manipulation",
+                  "severity": "high",
+                  "description": "The vulnerability allows an attacker to borrow a large amount of tokens via a flash loan, use them to vote in favor of a proposal, and then return the tokens, causing the proposal to pass with a large majority, even if the actual support is low.",
+                  "evidence": [
+                    "economic_modeling"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": false
+                },
+                {
+                  "vulnerability": "Flash Loan Voting Manipulation",
+                  "severity": "high",
+                  "description": "The vulnerability allows an attacker to manipulate voting by temporarily increasing their voting power through a flash loan, similar to how The DAO was exploited.",
+                  "evidence": [
+                    "historical_patterns"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": false
+                }
+              ],
+              "contradictions": [],
+              "overall_risk_score": 95
+            }
+          },
+          "metadata": {
+            "total_time_ms": 11219,
+            "agents_used": 4,
+            "model": "Qwen/Qwen2.5-7B-Instruct"
+          }
+        },
+        "score": {
+          "detected": 0,
+          "total": 2,
+          "accuracy": 0,
+          "false_positives": 3,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "batch-call-reentrancy",
+        "findings": {
+          "agents": {
+            "static_analysis": {
+              "vulnerability": "Reentrancy",
+              "severity": "high",
+              "line_range": "42-53",
+              "pattern": "External call before state update",
+              "precondition": "The attacker must be able to call `liquidate()` function.",
+              "confidence": 95
+            },
+            "economic_modeling": {
+              "vulnerability": "Cross-function reentrancy",
+              "attack_type": "reentrancy",
+              "scenario": "1. An attacker deposits a small amount of Ether to the contract.\n2. The attacker calls `borrow` with a large amount, which fails due to insufficient collateral.\n3. The attacker then calls `depositCollateral` to add more Ether to their balance.\n4. The attacker re-enters `borrow` before the collateral is updated, successfully borrowing the desired amount.\n5. The attacker then calls `liquidate` on themselves, seizing a large portion of their own collateral.",
+              "impact": "The attacker can borrow more Ether than they have collateral for, leading to potential loss of funds.",
+              "confidence": 85
+            },
+            "historical_patterns": {
+              "vulnerability": "Cross-function Reentrancy",
+              "historical_exploit": "Cream Finance (2021)",
+              "similarity": "The contract allows for a reentrancy attack by calling an external function within a liquidation process, which can be exploited to drain funds before the state is updated.",
+              "risk_level": "high",
+              "confidence": 85
+            },
+            "verification": {
+              "verified_findings": [
+                {
+                  "vulnerability": "Reentrancy",
+                  "severity": "high",
+                  "description": "The contract allows for a reentrancy attack by calling an external function within a liquidation process, which can be exploited to drain funds before the state is updated.",
+                  "evidence": [
+                    "static_analysis",
+                    "economic_modeling",
+                    "historical_patterns"
+                  ],
+                  "confidence": 95,
+                  "agents_agree": true
+                }
+              ],
+              "contradictions": [],
+              "overall_risk_score": 95
+            }
+          },
+          "metadata": {
+            "total_time_ms": 8672,
+            "agents_used": 4,
+            "model": "Qwen/Qwen2.5-7B-Instruct"
+          }
+        },
+        "score": {
+          "detected": 1,
+          "total": 1,
+          "accuracy": 1,
+          "false_positives": 0,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "timelock-bypass",
+        "findings": {
+          "agents": {
+            "static_analysis": [
+              {
+                "vulnerability": "Reentrancy",
+                "severity": "high",
+                "line_range": "18-22",
+                "pattern": "executeTransaction calls external contract without re-entrancy guard",
+                "precondition": "Admin queues a transaction and then calls executeTransaction in the same block",
+                "confidence": 95
+              },
+              {
+                "vulnerability": "Access Control Gap",
+                "severity": "high",
+                "line_range": "32-34",
+                "pattern": "changeAdmin can be called directly without timelock",
+                "precondition": "Admin directly calls changeAdmin bypassing the timelock",
+                "confidence": 95
+              }
+            ],
+            "economic_modeling": {
+              "vulnerability": "Admin Bypass via Direct Call",
+              "attack_type": "governance",
+              "scenario": "1. An attacker calls `changeAdmin` directly without waiting for the timelock period. 2. The admin is changed immediately, bypassing the timelock mechanism.",
+              "impact": "Loss of control over the contract",
+              "confidence": 85
+            },
+            "historical_patterns": {
+              "vulnerability": "Reentrancy",
+              "historical_exploit": "The DAO (2016)",
+              "similarity": "Both involve a function that can be called by an admin to execute a transaction after a delay, and both lack proper reentrancy checks.",
+              "risk_level": "high",
+              "confidence": 85
+            },
+            "verification": {
+              "verified_findings": [
+                {
+                  "vulnerability": "Reentrancy",
+                  "severity": "high",
+                  "description": "executeTransaction calls external contract without re-entrancy guard, which can be exploited if the function is called in the same block as the admin queues a transaction.",
+                  "evidence": [
+                    "static_analysis"
+                  ],
+                  "confidence": 95,
+                  "agents_agree": true
+                },
+                {
+                  "vulnerability": "Access Control Gap",
+                  "severity": "high",
+                  "description": "changeAdmin can be called directly without timelock, allowing an admin to bypass the timelock mechanism and change the admin directly.",
+                  "evidence": [
+                    "static_analysis"
+                  ],
+                  "confidence": 95,
+                  "agents_agree": true
+                },
+                {
+                  "vulnerability": "Admin Bypass via Direct Call",
+                  "severity": "high",
+                  "description": "An attacker can call `changeAdmin` directly without waiting for the timelock period, bypassing the timelock mechanism and gaining immediate control over the contract.",
+                  "evidence": [
+                    "static_analysis",
+                    "economic_modeling"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": true
+                }
+              ],
+              "contradictions": [],
+              "overall_risk_score": 85
+            }
+          },
+          "metadata": {
+            "total_time_ms": 11029,
+            "agents_used": 4,
+            "model": "Qwen/Qwen2.5-7B-Instruct"
+          }
+        },
+        "score": {
+          "detected": 1,
+          "total": 2,
+          "accuracy": 0.5,
+          "false_positives": 2,
+          "severity_accuracy": 0
+        }
+      },
+      {
+        "test_case": "cross-chain-replay",
+        "findings": {
+          "agents": {
+            "static_analysis": {
+              "vulnerability": "Reentrancy",
+              "severity": "high",
+              "line_range": "36-42",
+              "pattern": "Low-level call without checks",
+              "precondition": "The `message.to` contract has a fallback or receive function that can be exploited.",
+              "confidence": 85
+            },
+            "economic_modeling": {
+              "vulnerability": "Cross-chain bridge without chain ID in signature",
+              "attack_type": "composability",
+              "scenario": "An attacker can exploit the lack of chain ID in the signature to send a valid signature from one chain to another, allowing them to claim funds from the bridge gateway on a different chain.",
+              "impact": "Loss of funds equivalent to the amount deposited on the target chain.",
+              "confidence": 85
+            },
+            "historical_patterns": {
+              "vulnerability": "Cross-chain signature forgery",
+              "historical_exploit": "Wormhole (2022), Ronin (2022)",
+              "similarity": "Both exploits involve misuse of signatures across different chains without proper chain ID verification.",
+              "risk_level": "high",
+              "confidence": 85
+            },
+            "verification": {
+              "verified_findings": [
+                {
+                  "vulnerability": "Reentrancy",
+                  "severity": "high",
+                  "description": "The contract contains a low-level call without checks, which can be exploited by the `message.to` contract to perform reentrancy attacks.",
+                  "evidence": [
+                    "static_analysis"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": true
+                },
+                {
+                  "vulnerability": "Cross-chain bridge without chain ID in signature",
+                  "severity": "high",
+                  "description": "The cross-chain bridge does not include the chain ID in the signature, allowing an attacker to exploit this to send a valid signature from one chain to another, potentially leading to the loss of funds.",
+                  "evidence": [
+                    "economic_modeling"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": true
+                },
+                {
+                  "vulnerability": "Cross-chain signature forgery",
+                  "severity": "high",
+                  "description": "The contract is vulnerable to cross-chain signature forgery, similar to historical exploits such as Wormhole and Ronin, due to the lack of proper chain ID verification in signatures.",
+                  "evidence": [
+                    "historical_patterns"
+                  ],
+                  "confidence": 85,
+                  "agents_agree": true
+                }
+              ],
+              "contradictions": [],
+              "overall_risk_score": 85
+            }
+          },
+          "metadata": {
+            "total_time_ms": 11152,
+            "agents_used": 4,
+            "model": "Qwen/Qwen2.5-7B-Instruct"
+          }
+        },
+        "score": {
+          "detected": 0,
+          "total": 2,
+          "accuracy": 0,
+          "false_positives": 3,
+          "severity_accuracy": 0
+        }
+      }
+    ]
+  }
+}
