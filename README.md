@@ -52,24 +52,36 @@ Upload your Solidity contract and the audit report. Five specialized AI agents a
 
 ```mermaid
 flowchart TB
-  User[User] --> Upload[Upload Contract + Audit Report]
-  Upload --> API[API Gateway]
+  User["User"] -->|"Upload .sol + audit report"| API["API Gateway"]
 
-  API --> Static[Static Analysis Agent]
-  API --> Economic[Economic Modeling Agent]
-  API --> Historical[Historical Patterns Agent]
+  API -->|"Contract code"| Static["Static Analysis Agent"]
+  API -->|"Contract code"| Economic["Economic Modeling Agent"]
+  API -->|"Contract code"| Historical["Historical Patterns Agent"]
 
-  Static --> Verify[Verification Agent]
-  Economic --> Verify
-  Historical --> Verify
+  Static -->|"Code vulnerabilities"| Verify["Verification Agent"]
+  Economic -->|"Attack vectors"| Verify
+  Historical -->|"Known exploits"| Verify
 
-  Verify --> Synth[Synthesis Agent]
-  Synth --> Report[Professional Audit Report]
+  Verify -->|"Cross-check + resolve"| Synth["Synthesis Agent"]
+  Synth --> Report["Professional Audit Report"]
 
-  Report --> Summary[Executive Summary]
-  Report --> Findings[Vulnerability Findings]
-  Report --> Scenarios[Attack Scenarios]
-  Report --> Remediation[Remediation Priority]
+  Report --> Summary["Executive Summary"]
+  Report --> Findings["Per-Vulnerability Analysis"]
+  Report --> Paths["Attack Scenarios"]
+  Report --> Fix["Remediation Priority"]
+
+  style User fill:#1a1a1a,stroke:#fafafa,color:#fafafa
+  style API fill:#1a1a1a,stroke:#3b82f6,color:#3b82f6
+  style Static fill:#1a1a1a,stroke:#22c55e,color:#22c55e
+  style Economic fill:#1a1a1a,stroke:#eab308,color:#eab308
+  style Historical fill:#1a1a1a,stroke:#a78bfa,color:#a78bfa
+  style Verify fill:#1a1a1a,stroke:#f97316,color:#f97316
+  style Synth fill:#1a1a1a,stroke:#ec4899,color:#ec4899
+  style Report fill:#0a2e1a,stroke:#22c55e,color:#22c55e
+  style Summary fill:#1a1a1a,stroke:#6b7280,color:#6b7280
+  style Findings fill:#1a1a1a,stroke:#6b7280,color:#6b7280
+  style Paths fill:#1a1a1a,stroke:#6b7280,color:#6b7280
+  style Fix fill:#1a1a1a,stroke:#6b7280,color:#6b7280
 ```
 
 ### Agent Roles
