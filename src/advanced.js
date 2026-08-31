@@ -91,6 +91,10 @@ async function callLLM(apiKey, systemPrompt, content) {
   catch {
     const match = text.match(/```json?\s*([\s\S]*?)```/);
     if (match) return JSON.parse(match[1]);
+    const cleaned = text.replace(/^json\s*\n/, '').trim();
+    try { return JSON.parse(cleaned); } catch {}
+    const objMatch = text.match(/\{[\s\S]*\}/);
+    if (objMatch) try { return JSON.parse(objMatch[0]); } catch {}
     return { raw: text, parse_error: true };
   }
 }

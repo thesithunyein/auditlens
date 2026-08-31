@@ -54,8 +54,15 @@ export async function baselineAnalysis(contractCode, auditReport, apiKey) {
   try {
     return JSON.parse(content);
   } catch (e) {
+    // Try extracting from markdown code block
     const match = content.match(/```json?\s*([\s\S]*?)```/);
     if (match) return JSON.parse(match[1]);
+    // Try removing 'json\n' prefix
+    const cleaned = content.replace(/^json\s*\n/, '').trim();
+    try { return JSON.parse(cleaned); } catch {}
+    // Try finding array in content
+    const arrMatch = content.match(/\[\s*\{[\s\S]*\}\s*\]/);
+    if (arrMatch) return JSON.parse(arrMatch[0]);
     return [];
   }
 }

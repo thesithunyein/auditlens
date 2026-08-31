@@ -116,6 +116,10 @@ async function runBaseline(apiKey, model, contract, auditReport) {
   catch {
     const match = content.match(/```json?\s*([\s\S]*?)```/);
     if (match) return JSON.parse(match[1]);
+    const cleaned = content.replace(/^json\s*\n/, '').trim();
+    try { return JSON.parse(cleaned); } catch {}
+    const arrMatch = content.match(/\[\s*\{[\s\S]*\}\s*\]/);
+    if (arrMatch) return JSON.parse(arrMatch[0]);
     return [];
   }
 }
@@ -174,6 +178,10 @@ async function runAgent(apiKey, model, systemPrompt, content, retries = 2) {
       catch {
         const match = text.match(/```json?\s*([\s\S]*?)```/);
         if (match) return JSON.parse(match[1]);
+        const cleaned = text.replace(/^json\s*\n/, '').trim();
+        try { return JSON.parse(cleaned); } catch {}
+        const objMatch = text.match(/\{[\s\S]*\}/);
+        if (objMatch) try { return JSON.parse(objMatch[0]); } catch {}
         return { raw: text, parse_error: true };
       }
     } catch (err) {
