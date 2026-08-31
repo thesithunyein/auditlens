@@ -144,8 +144,16 @@ async function runAdvanced(apiKey, model, contract, auditReport) {
 
   const verified = await runAgent(null, model, VERIFICATION_PROMPT, verificationInput);
 
+  // Phase 3: Synthesis — convert JSON to professional report
+  const synthesisInput = JSON.stringify({
+    verified_findings: verified?.verified_findings || [],
+    overall_risk_score: verified?.overall_risk_score || 0,
+    contract_summary: contractCode.slice(0, 500)
+  }, null, 2);
+  const synthesis = await runAgent(null, model, SYNTHESIS_PROMPT, synthesisInput);
+
   return {
-    agents: { static_analysis: staticResult, economic_modeling: economicResult, historical_patterns: historicalResult, verification: verified }
+    agents: { static_analysis: staticResult, economic_modeling: economicResult, historical_patterns: historicalResult, verification: verified, synthesis: synthesis }
   };
 }
 
@@ -194,42 +202,44 @@ async function runAgent(apiKey, model, systemPrompt, content, retries = 2) {
 // ─── AGENT PROMPTS ───
 
 const STATIC_PROMPT = `You are a specialized static analysis agent for Solidity smart contracts.
-Focus on: reentrancy, integer overflow/underflow, unchecked return values, access control gaps, timestamp dependence, front-running, uninitialized storage, delegatecall abuse.
-For each finding output JSON: { "vulnerability": "name", "severity": "critical|high|medium|low", "description": "what the issue is", "line_hint": "approximate location", "precondition": "what must be true", "confidence": 0-100 }
-Be SPECIFIC. Do NOT flag patterns that have proper guards.`;
+
+Step 1: REASONING — For each function, analyze: external calls before/after state update, unchecked return values, access control, timestamp dependence, frontrunning risk.
+Step 2: FINDINGS — For each vulnerability:
+{ "vulnerability": "name", "severity": "critical|high|medium|low", "reasoning": "step-by-step analysis", "pattern": "what code pattern", "precondition": "what must be true", "confidence": 0-100 }
+Do NOT flag patterns with proper guards.`;
 
 const ECONOMIC_PROMPT = `You are a specialized economic attack simulation agent.
-Analyze for: flash loan attacks, oracle manipulation, MEV extraction, governance attacks, liquidity manipulation, cross-contract composability risks.
-For each attack vector output JSON: { "vulnerability": "name", "attack_type": "flash_loan|oracle|mev|governance|composability", "scenario": "step-by-step attack", "impact": "estimated loss", "confidence": 0-100 }
-Think like an attacker.`;
+
+Step 1: ATTACK THINKING — For each function, ask: Can price be manipulated? Flash loans? MEV? Governance?
+Step 2: ATTACK PATHS — For each vector:
+{ "vulnerability": "name", "attack_type": "flash_loan|oracle|mev|governance|composability", "attack_path": [{"step": 1, "action": "...", "effect": "..."}], "scenario": "step-by-step", "impact": "estimated loss", "confidence": 0-100 }
+Think like an attacker. Show the COMPLETE chain.`;
 
 const HISTORICAL_PROMPT = `You are a historical exploit pattern matching agent.
 Cross-reference against: The DAO (2016), Parity (2017), bZx (2020), Harvest (2020), Cream (2021), Mango (2022), Curve (2023), Euler (2023).
-For each match output JSON: { "vulnerability": "name", "historical_exploit": "name and year", "similarity": "what's similar", "risk_level": "high|medium|low", "confidence": 0-100 }`;
+For each match:
+{ "vulnerability": "name", "historical_exploit": "name and year", "similarity": "what's similar", "difference": "what's different", "risk_level": "high|medium|low", "confidence": 0-100 }`;
 
-const VERIFICATION_PROMPT = `You are a verification agent. Your ONLY job is to combine findings from three specialist agents into a single verified list.
+const VERIFICATION_PROMPT = `You are a verification agent. Combine findings from three specialist agents.
 
-CRITICAL RULES:
-1. You MUST include EVERY finding from EVERY specialist agent in your output
-2. If two agents found the same thing, keep it as ONE finding and note both agents
-3. If agents disagree on severity, use the HIGHEST severity
-4. NEVER drop a finding. NEVER discard. NEVER skip. The output COUNT must equal or exceed the input COUNT.
-5. Add any additional vulnerabilities YOU notice from cross-referencing
+RULES: Include EVERY finding. If two agents found the same thing, combine into ONE with both listed. Use HIGHEST severity on disagreement. NEVER drop findings.
 
-The specialist agents are: static_analysis, economic_modeling, historical_patterns.
-
-Output JSON with this EXACT structure:
+Output JSON:
 {
-  "verified_findings": [
-    {
-      "vulnerability": "name",
-      "severity": "critical|high|medium|low",
-      "description": "description",
-      "evidence": ["static_analysis" or "economic_modeling" or "historical_patterns" or combinations],
-      "confidence": 0-100
-    }
-  ],
+  "verified_findings": [{ "vulnerability": "name", "severity": "critical|high|medium|low", "description": "...", "reasoning": "why this is real", "attack_path": [{"step": 1, "action": "...", "effect": "..."}] or null, "evidence": ["agent names"], "confidence": 0-100 }],
   "overall_risk_score": 0-100
-}
+}`;
 
-REMINDER: Output at least as many findings as were provided. Count them before submitting.`;
+const SYNTHESIS_PROMPT = `You are a senior security auditor. Convert JSON findings into a professional audit report.
+
+FORMAT:
+## Executive Summary
+[2-3 sentences: overall risk, key findings, recommendation]
+## Risk Assessment
+[Score and justification]
+## Findings
+[For each: ### NAME — SEVERITY, Confidence, Evidence, Analysis (reasoning), Attack Scenario (step-by-step), Impact, Recommendation with code fix, Historical Reference]
+## Remediation Priority
+[Prioritized list]
+
+Be specific. Use code examples. Reference real exploits.`;
